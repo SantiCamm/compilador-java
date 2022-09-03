@@ -37,7 +37,7 @@ Plus = "+"
 Mult = "*"
 Sub = "-"
 Div = "/"
-Assig = ":="
+Assig = "="
 Rest = "%"
 
 Mayor = ">"
@@ -63,7 +63,8 @@ DoubleDot = ":"
 
 Letter = [a-zA-Z]
 Digit = [0-9]
-Character = [a-zA-z0-9<>:,@\%\+\*\-\.\[\];\(\)=?!]
+Digit19 = [1-9]
+InvalidCharacter = [^a-zA-z0-9<>:,@\%\+\*\-\.\[\];\(\)=?!]
 
 TraditionalComment   = "/*" [^*] ~"*/" | "/*" "*"+ "/"
 EndOfLineComment     = "//" {InputCharacter}* {LineTerminator}?
@@ -76,9 +77,10 @@ WhiteSpace = {LineTerminator} | {Identation}
 
 Identifier = {Letter} ({Letter}|{Digit})*
 
+//IntegerConstant = {Digit}+ | {Digit19}+{Digit}+
 IntegerConstant = {Digit}+
-FloatConstant = {Digit}+\.{Digit}+ | .{Digit}+
-StringConstant = \"((.[^\"]*)\"){1,40}
+FloatConstant = {Digit}+\.{Digit}+ | \.{Digit}+
+StringConstant = \"((.[^\"]*)\")
 
 Init = "init"
 
@@ -155,5 +157,4 @@ Read = "read"
 
    /* Error fallback */
    ^[]                                      { throw new UnknownCharacterException(yytext()); }
-   !{Character}                             { throw new UnknownCharacterException(yytext()); }
-
+   {InvalidCharacter}                       { throw new UnknownCharacterException(yytext()); }

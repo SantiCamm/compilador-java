@@ -66,7 +66,7 @@ public class LexerTest {
     });
   }
 
-  @Disabled
+//  @Disabled
   @Test
   public void assignmentWithExpressions() throws Exception {
     scan("c=d*(e-21)/4");
