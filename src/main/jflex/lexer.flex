@@ -70,9 +70,8 @@ TraditionalComment   = "/*" [^*] ~"*/" | "/*" "*"+ "/"
 EndOfLineComment     = "//" {InputCharacter}* {LineTerminator}?
 DocumentationComment = "/**" {CommentContent} "*"+ "/"
 CommentContent       = ( [^*] | \*+ [^/*] )*
-
-
 Comment = {TraditionalComment} | {EndOfLineComment} | {DocumentationComment}
+
 WhiteSpace = {LineTerminator} | {Identation}
 
 Identifier = {Letter} ({Letter}|{Digit})*
@@ -104,7 +103,19 @@ Read = "read"
   {Identifier}                             { return symbol(ParserSym.IDENTIFIER, yytext()); }
 
   /* Constants */
-  {IntegerConstant}                        { return symbol(ParserSym.INTEGER_CONSTANT, yytext()); }
+  {IntegerConstant}                        {
+                                                if(yytext().length() > 5 ) {
+                                                    throw new InvalidIntegerException(yytext());
+                                                }
+                                                else if(Integer.valueOf(yytext()) > 65535)
+                                                {
+                                                    throw new InvalidIntegerException(yytext());
+                                                }
+                                                 else {
+                                                     return symbol(ParserSym.INTEGER_CONSTANT, yytext());
+                                                 }
+                                            }
+
   {FloatConstant}                          { return symbol(ParserSym.FLOAT_CONSTANT, yytext()); }
   {StringConstant}                         { return symbol(ParserSym.STRING_CONSTANT, yytext()); }
 
