@@ -26,6 +26,7 @@ import static lyc.compiler.constants.Constants.*;
   private Symbol symbol(int type, Object value) {
     return new Symbol(type, yyline, yycolumn, value);
   }
+  StringBuffer sb;
 %}
 
 
@@ -78,8 +79,9 @@ Identifier = {Letter} ({Letter}|{Digit})*
 
 //IntegerConstant = {Digit}+ | {Digit19}+{Digit}+
 IntegerConstant = {Digit}+
+InvalidIntegerConstant = 0+{Digit19}+
 FloatConstant = {Digit}+\.{Digit}+ | \.{Digit}+
-StringConstant = \"((.[^\"]*)\")
+StringConstant = \"(([^\"\n]*)\")
 
 Init = "init"
 
@@ -117,7 +119,13 @@ Read = "read"
                                             }
 
   {FloatConstant}                          { return symbol(ParserSym.FLOAT_CONSTANT, yytext()); }
-  {StringConstant}                         { return symbol(ParserSym.STRING_CONSTANT, yytext()); }
+  {StringConstant}                         {
+                                                sb = new StringBuffer(yytext());
+                                                if(sb.length() > 41)
+                                                    throw new InvalidLengthException(yytext());
+                                                else
+                                                    return symbol(ParserSym.STRING_CONSTANT, yytext());
+                                            }
 
   /* Operators */
   {Plus}                                    { return symbol(ParserSym.PLUS); }

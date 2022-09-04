@@ -30,20 +30,26 @@ public class LexerTest {
     assertThat(nextToken()).isEqualTo(ParserSym.EOF);
   }
 
-  @Disabled
   @Test
   public void invalidStringConstantLength() {
     assertThrows(InvalidLengthException.class, () -> {
-      scan("\"%s\"".formatted(getRandomString()));
+      scan("\"%s\"".formatted(getRandomString(2)));
       nextToken();
     });
+  }
+
+
+  @Test
+  public void validString() throws Exception {
+    scan("\"%s\"".formatted(getRandomString(1)));
+    assertThat(nextToken()).isEqualTo(ParserSym.STRING_CONSTANT);
   }
 
   @Disabled
   @Test
   public void invalidIdLength() {
     assertThrows(InvalidLengthException.class, () -> {
-      scan(getRandomString());
+      scan(getRandomString(2));
       nextToken();
     });
   }
@@ -106,11 +112,11 @@ public class LexerTest {
     return lexer.next_token().sym;
   }
 
-  private static String getRandomString() {
+  private static String getRandomString(int multiplier) {
     return new RandomStringGenerator.Builder()
             .filteredBy(CharacterPredicates.LETTERS)
             .withinRange('a', 'z')
-            .build().generate(MAX_LENGTH * 2);
+            .build().generate((MAX_LENGTH * multiplier)-2); //-2 removes the length of ""
   }
 
 }
