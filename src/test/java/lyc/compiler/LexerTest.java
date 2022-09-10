@@ -89,16 +89,6 @@ public class LexerTest {
 
 //  @Disabled
   @Test
-  public void invalidExponentFloatConstantValue() {
-    assertThrows(InvalidFloatException.class, () -> {
-      scan(String.valueOf(300.120005));
-      nextToken();
-    });
-  }
-
-
-//  @Disabled
-  @Test
   public void invalidMantissaFloatConstantValue() {
     assertThrows(InvalidFloatException.class, () -> {
       scan(String.valueOf(12.22222222222222));
