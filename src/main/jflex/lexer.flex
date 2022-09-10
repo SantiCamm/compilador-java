@@ -34,6 +34,19 @@ LineTerminator = \r|\n|\r\n
 InputCharacter = [^\r\n]
 Identation =  [ \t\f]
 
+Init = "init"
+
+Int = "Int"
+Float = "Float"
+String = "String"
+
+If = "if"
+While = "while"
+Else = "else"
+
+Write = "write"
+Read = "read"
+
 Plus = "+"
 Mult = "*"
 Sub = "-"
@@ -81,27 +94,33 @@ Identifier = {Letter} ({Letter}|{Digit}|_)*
 IntegerConstant = {Digit}+
 InvalidIntegerConstant = 0+{Digit19}+
 //FloatConstant = (({Digit}|{Digit19}{Digit}+)\.{Digit}+) | \.{Digit}+
-FloatConstant = (({Digit}|{Digit19}{Digit}+)? \. {Digit}+) //otra opcion
+FloatConstant = (({Digit}|{Digit19}{Digit}+)?\.{Digit}+) //otra opcion
 StringConstant = \"(([^\"\n]*)\")
-
-Init = "init"
-
-Int = "int"
-Float = "float"
-String = "string"
-
-If = "if"
-While = "while"
-Else = "else"
-
-Write = "write"
-Read = "read"
 %%
 
 
 /* keywords */
 
 <YYINITIAL> {
+  /* Declaration */
+  {Init}                                    { return symbol(ParserSym.INIT); }
+
+  /* Logical */
+  {If}                                     { return symbol(ParserSym.IF); }
+  {Else}                                   { return symbol(ParserSym.ELSE); }
+  {While}                                  { return symbol(ParserSym.WHILE); }
+
+
+  /* Data types */
+  {Int}                                     { return symbol(ParserSym.INT); }
+  {Float}                                   { return symbol(ParserSym.FLOAT); }
+  {String}                                  { return symbol(ParserSym.STRING); }
+
+
+  /* I/O */
+  {Write}                                  { return symbol(ParserSym.WRITE); }
+  {Read}                                   { return symbol(ParserSym.READ); }
+
   /* Identifiers */
   {Identifier}                             { return symbol(ParserSym.IDENTIFIER, yytext()); }
 
@@ -124,11 +143,16 @@ Read = "read"
                                                 String exp = num[0];
                                                 String mantissa = num[1];
 
-                                                if(exp.length() > 3 || Integer.parseInt(exp) > 256 )
-                                                    throw new InvalidFloatException("Exponent out of range");
+                                                if(exp.length() > 0)
+                                                    {
+                                                       if(exp.length() > 3 || Integer.parseInt(exp) > 256 )
+                                                           throw new InvalidFloatException("Exponent out of range");
+                                                    }
 
-                                                if(mantissa.length() > 8 || Integer.parseInt(mantissa) > 16777216)
-                                                    throw new InvalidFloatException("Mantissa out of range");
+                                                if(mantissa.length() > 0) {
+                                                  if(mantissa.length() > 8 || Integer.parseInt(mantissa) > 16777216)
+                                                      throw new InvalidFloatException("Mantissa out of range");
+                                                }
 
                                                 return symbol(ParserSym.FLOAT_CONSTANT, yytext());
                                             }
@@ -141,9 +165,6 @@ Read = "read"
                                                     return symbol(ParserSym.STRING_CONSTANT, yytext());
                                             }
 
-  /*Declaration*/
-  {Init}                                    { return symbol(ParserSym.INIT); }
-
   /* Operators */
   {Plus}                                    { return symbol(ParserSym.PLUS); }
   {Sub}                                     { return symbol(ParserSym.SUB); }
@@ -153,8 +174,8 @@ Read = "read"
   {Assig}                                   { return symbol(ParserSym.ASSIG); }
   {OpenBracket}                             { return symbol(ParserSym.OPEN_BRACKET); }
   {CloseBracket}                            { return symbol(ParserSym.CLOSE_BRACKET); }
-  {OpenCurlyBrace}                          { return symbol(ParserSym.OPEN_CURLY_BRACE); }
-  {CloseCurlyBrace}                         { return symbol(ParserSym.CLOSE_CURLY_BRACE); }
+  {OpenCurlyBrace}                          { return symbol(ParserSym.OPEN_CURLY_BRACKET); }
+  {CloseCurlyBrace}                         { return symbol(ParserSym.CLOSE_CURLY_BRACKET); }
 
    /* Comparators */
    {Mayor}                                  { return symbol(ParserSym.MAYOR); }
@@ -174,15 +195,6 @@ Read = "read"
    {SemiColon}                              { return symbol(ParserSym.SEMI_COLON); }
    {Dot}                                    { return symbol(ParserSym.DOT); }
    {DoubleDot}                              { return symbol(ParserSym.DOUBLE_DOT); }
-
-   /* Logical */
-   {If}                                     { return symbol(ParserSym.IF); }
-   {Else}                                   { return symbol(ParserSym.ELSE); }
-   {While}                                  { return symbol(ParserSym.WHILE); }
-
-   /* I/O */
-   {Write}                                  { return symbol(ParserSym.WRITE); }
-   {Read}                                   { return symbol(ParserSym.READ); }
 
    /* Whitespace */
    {WhiteSpace}                             { /* ignore */ }
