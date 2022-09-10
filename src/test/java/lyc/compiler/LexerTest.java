@@ -1,10 +1,7 @@
 package lyc.compiler;
 
 import lyc.compiler.factories.LexerFactory;
-import lyc.compiler.model.CompilerException;
-import lyc.compiler.model.InvalidIntegerException;
-import lyc.compiler.model.InvalidLengthException;
-import lyc.compiler.model.UnknownCharacterException;
+import lyc.compiler.model.*;
 import org.apache.commons.text.CharacterPredicates;
 import org.apache.commons.text.RandomStringGenerator;
 import org.junit.jupiter.api.AfterEach;
@@ -18,7 +15,7 @@ import static lyc.compiler.constants.Constants.MAX_LENGTH;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
-@Disabled
+
 public class LexerTest {
 
   private Lexer lexer;
@@ -33,19 +30,27 @@ public class LexerTest {
   @Test
   public void invalidStringConstantLength() {
     assertThrows(InvalidLengthException.class, () -> {
-      scan("\"%s\"".formatted(getRandomString()));
+      scan("\"%s\"".formatted(getRandomString(2)));
       nextToken();
     });
+  }
+
+
+  @Test
+  public void validString() throws Exception {
+    scan("\"%s\"".formatted(getRandomString(1)));
+    assertThat(nextToken()).isEqualTo(ParserSym.STRING_CONSTANT);
   }
 
   @Test
   public void invalidIdLength() {
     assertThrows(InvalidLengthException.class, () -> {
-      scan(getRandomString());
+      scan("\"" + getRandomString(2) + "\"");
       nextToken();
     });
   }
 
+//  @Disabled
   @Test
   public void invalidPositiveIntegerConstantValue() {
     assertThrows(InvalidIntegerException.class, () -> {
@@ -54,6 +59,7 @@ public class LexerTest {
     });
   }
 
+  @Disabled
   @Test
   public void invalidNegativeIntegerConstantValue() {
     assertThrows(InvalidIntegerException.class, () -> {
@@ -61,8 +67,23 @@ public class LexerTest {
       nextToken();
     });
   }
+  @Test
+  public void invalidExponentFloatConstantValue() {
+    assertThrows(InvalidFloatException.class, () -> {
+      scan(String.valueOf(300.120005));
+      nextToken();
+    });
+  }
 
+  @Test
+  public void invalidMantissaFloatConstantValue() {
+    assertThrows(InvalidFloatException.class, () -> {
+      scan(String.valueOf(12.22222222222222));
+      nextToken();
+    });
+  }
 
+//  @Disabled
   @Test
   public void assignmentWithExpressions() throws Exception {
     scan("c=d*(e-21)/4");
@@ -80,6 +101,7 @@ public class LexerTest {
     assertThat(nextToken()).isEqualTo(ParserSym.EOF);
   }
 
+//  @Disabled
   @Test
   public void unknownCharacter() {
     assertThrows(UnknownCharacterException.class, () -> {
@@ -101,11 +123,11 @@ public class LexerTest {
     return lexer.next_token().sym;
   }
 
-  private static String getRandomString() {
+  private static String getRandomString(int multiplier) {
     return new RandomStringGenerator.Builder()
             .filteredBy(CharacterPredicates.LETTERS)
             .withinRange('a', 'z')
-            .build().generate(MAX_LENGTH * 2);
+            .build().generate((MAX_LENGTH * multiplier)-2); //-2 removes the length of ""
   }
 
 }
