@@ -42,18 +42,10 @@ public class LexerTest {
     assertThat(nextToken()).isEqualTo(ParserSym.STRING_CONSTANT);
   }
 
-<<<<<<< Updated upstream
-  @Disabled
-  @Test
-  public void invalidIdLength() {
-    assertThrows(InvalidLengthException.class, () -> {
-      scan(getRandomString(2));
-=======
   @Test
   public void invalidIdLength() {
     assertThrows(InvalidLengthException.class, () -> {
       scan("\"" + getRandomString(2) + "\"");
->>>>>>> Stashed changes
       nextToken();
     });
   }
@@ -75,9 +67,6 @@ public class LexerTest {
       nextToken();
     });
   }
-
-<<<<<<< Updated upstream
-=======
   @Test
   public void invalidExponentFloatConstantValue() {
     assertThrows(InvalidFloatException.class, () -> {
@@ -94,7 +83,6 @@ public class LexerTest {
     });
   }
 
->>>>>>> Stashed changes
 //  @Disabled
   @Test
   public void assignmentWithExpressions() throws Exception {
