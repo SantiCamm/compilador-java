@@ -38,6 +38,7 @@ terminal WHILE;
 terminal WRITE;
 terminal READ;
 terminal IDENTIFIER;
+terminal INIT;
 
 // Non Terminals
 non terminal sentence;

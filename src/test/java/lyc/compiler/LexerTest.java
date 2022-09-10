@@ -1,10 +1,7 @@
 package lyc.compiler;
 
 import lyc.compiler.factories.LexerFactory;
-import lyc.compiler.model.CompilerException;
-import lyc.compiler.model.InvalidIntegerException;
-import lyc.compiler.model.InvalidLengthException;
-import lyc.compiler.model.UnknownCharacterException;
+import lyc.compiler.model.*;
 import org.apache.commons.text.CharacterPredicates;
 import org.apache.commons.text.RandomStringGenerator;
 import org.junit.jupiter.api.AfterEach;
@@ -45,11 +42,18 @@ public class LexerTest {
     assertThat(nextToken()).isEqualTo(ParserSym.STRING_CONSTANT);
   }
 
+<<<<<<< Updated upstream
   @Disabled
   @Test
   public void invalidIdLength() {
     assertThrows(InvalidLengthException.class, () -> {
       scan(getRandomString(2));
+=======
+  @Test
+  public void invalidIdLength() {
+    assertThrows(InvalidLengthException.class, () -> {
+      scan("\"" + getRandomString(2) + "\"");
+>>>>>>> Stashed changes
       nextToken();
     });
   }
@@ -72,6 +76,25 @@ public class LexerTest {
     });
   }
 
+<<<<<<< Updated upstream
+=======
+  @Test
+  public void invalidExponentFloatConstantValue() {
+    assertThrows(InvalidFloatException.class, () -> {
+      scan(String.valueOf(300.120005));
+      nextToken();
+    });
+  }
+
+  @Test
+  public void invalidMantissaFloatConstantValue() {
+    assertThrows(InvalidFloatException.class, () -> {
+      scan(String.valueOf(12.22222222222222));
+      nextToken();
+    });
+  }
+
+>>>>>>> Stashed changes
 //  @Disabled
   @Test
   public void assignmentWithExpressions() throws Exception {

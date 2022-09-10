@@ -65,7 +65,11 @@ DoubleDot = ":"
 Letter = [a-zA-Z]
 Digit = [0-9]
 Digit19 = [1-9]
+<<<<<<< Updated upstream
 InvalidCharacter = [^a-zA-z0-9<>:,@\%\+\*\-\.\[\];\(\)=?!]
+=======
+InvalidCharacter = [^a-zA-z0-9<>:,@/\%\+\*\-\.\[\];\(\)=?!]
+>>>>>>> Stashed changes
 
 TraditionalComment   = "/*" [^*] ~"*/" | "/*" "*"+ "/"
 EndOfLineComment     = "//" {InputCharacter}* {LineTerminator}?
@@ -75,12 +79,21 @@ Comment = {TraditionalComment} | {EndOfLineComment} | {DocumentationComment}
 
 WhiteSpace = {LineTerminator} | {Identation}
 
+<<<<<<< Updated upstream
 Identifier = {Letter} ({Letter}|{Digit})*
+=======
+Identifier = {Letter} ({Letter}|{Digit}|_)*
+>>>>>>> Stashed changes
 
 //IntegerConstant = {Digit}+ | {Digit19}+{Digit}+
 IntegerConstant = {Digit}+
 InvalidIntegerConstant = 0+{Digit19}+
+<<<<<<< Updated upstream
 FloatConstant = {Digit}+\.{Digit}+ | \.{Digit}+
+=======
+//FloatConstant = (({Digit}|{Digit19}{Digit}+)\.{Digit}+) | \.{Digit}+
+FloatConstant = (({Digit}|{Digit19}{Digit}+)? \. {Digit}+) //otra opcion
+>>>>>>> Stashed changes
 StringConstant = \"(([^\"\n]*)\")
 
 Init = "init"
@@ -118,15 +131,41 @@ Read = "read"
                                                  }
                                             }
 
+<<<<<<< Updated upstream
   {FloatConstant}                          { return symbol(ParserSym.FLOAT_CONSTANT, yytext()); }
   {StringConstant}                         {
                                                 sb = new StringBuffer(yytext());
                                                 if(sb.length() > 41)
+=======
+  {FloatConstant}                          {
+                                                String[] num = yytext().split("\\.");
+                                                String exp = num[0];
+                                                String mantissa = num[1];
+
+                                                if(exp.length() > 3 || Integer.parseInt(exp) > 256 )
+                                                    throw new InvalidFloatException("Exponent out of range");
+
+                                                if(mantissa.length() > 8 || Integer.parseInt(mantissa) > 16777216)
+                                                    throw new InvalidFloatException("Mantissa out of range");
+
+                                                return symbol(ParserSym.FLOAT_CONSTANT, yytext());
+                                            }
+
+  {StringConstant}                         {
+                                                sb = new StringBuffer(yytext());
+                                                if(sb.length() > 42) //quotes add 2 to max length
+>>>>>>> Stashed changes
                                                     throw new InvalidLengthException(yytext());
                                                 else
                                                     return symbol(ParserSym.STRING_CONSTANT, yytext());
                                             }
 
+<<<<<<< Updated upstream
+=======
+  /*Declaration*/
+  {Init}                                    { return symbol(ParserSym.INIT); }
+
+>>>>>>> Stashed changes
   /* Operators */
   {Plus}                                    { return symbol(ParserSym.PLUS); }
   {Sub}                                     { return symbol(ParserSym.SUB); }
