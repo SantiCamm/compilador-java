@@ -102,6 +102,7 @@ StringConstant = \"(([^\"\n]*)\")
 /* keywords */
 
 <YYINITIAL> {
+
   /* Declaration */
   {Init}                                    { return symbol(ParserSym.INIT); }
 
@@ -120,6 +121,7 @@ StringConstant = \"(([^\"\n]*)\")
   /* I/O */
   {Write}                                  { return symbol(ParserSym.WRITE); }
   {Read}                                   { return symbol(ParserSym.READ); }
+
 
   /* Identifiers */
   {Identifier}                             { return symbol(ParserSym.IDENTIFIER, yytext()); }
@@ -143,6 +145,7 @@ StringConstant = \"(([^\"\n]*)\")
                                                 String exp = num[0];
                                                 String mantissa = num[1];
 
+
                                                 if(exp.length() > 0)
                                                     {
                                                        if(exp.length() > 3 || Integer.parseInt(exp) > 256 )
@@ -153,7 +156,6 @@ StringConstant = \"(([^\"\n]*)\")
                                                   if(mantissa.length() > 8 || Integer.parseInt(mantissa) > 16777216)
                                                       throw new InvalidFloatException("Mantissa out of range");
                                                 }
-
                                                 return symbol(ParserSym.FLOAT_CONSTANT, yytext());
                                             }
 
@@ -164,6 +166,11 @@ StringConstant = \"(([^\"\n]*)\")
                                                 else
                                                     return symbol(ParserSym.STRING_CONSTANT, yytext());
                                             }
+
+
+  /*Declaration*/
+  {Init}                                    { return symbol(ParserSym.INIT); }
+
 
   /* Operators */
   {Plus}                                    { return symbol(ParserSym.PLUS); }
@@ -176,6 +183,7 @@ StringConstant = \"(([^\"\n]*)\")
   {CloseBracket}                            { return symbol(ParserSym.CLOSE_BRACKET); }
   {OpenCurlyBrace}                          { return symbol(ParserSym.OPEN_CURLY_BRACKET); }
   {CloseCurlyBrace}                         { return symbol(ParserSym.CLOSE_CURLY_BRACKET); }
+
 
    /* Comparators */
    {Mayor}                                  { return symbol(ParserSym.MAYOR); }
@@ -195,6 +203,7 @@ StringConstant = \"(([^\"\n]*)\")
    {SemiColon}                              { return symbol(ParserSym.SEMI_COLON); }
    {Dot}                                    { return symbol(ParserSym.DOT); }
    {DoubleDot}                              { return symbol(ParserSym.DOUBLE_DOT); }
+
 
    /* Whitespace */
    {WhiteSpace}                             { /* ignore */ }

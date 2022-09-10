@@ -79,6 +79,13 @@ public class LexerTest {
       nextToken();
     });
   }
+  @Test
+  public void invalidExponentFloatConstantValue() {
+    assertThrows(InvalidFloatException.class, () -> {
+      scan(String.valueOf(300.120005));
+      nextToken();
+    });
+  }
 
 //  @Disabled
   @Test
@@ -88,6 +95,7 @@ public class LexerTest {
       nextToken();
     });
   }
+
 
 //  @Disabled
   @Test
@@ -114,6 +122,7 @@ public class LexerTest {
 //    assertThat(nextToken()).isEqualTo(ParserSym.EOF);
   }
 
+
 //  @Disabled
   @Test
   public void assignmentWithExpressions() throws Exception {
@@ -132,6 +141,7 @@ public class LexerTest {
     assertThat(nextToken()).isEqualTo(ParserSym.EOF);
   }
 
+//  @Disabled
   @Test
   public void variableDeclaration() throws Exception {
     scan("init { a : Float } ");
