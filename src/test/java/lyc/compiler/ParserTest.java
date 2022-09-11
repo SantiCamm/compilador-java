@@ -82,6 +82,12 @@ public class ParserTest {
         compilationSuccessful(readFromFile("if.txt"));
     }
 
+
+    @Test
+    void allEqual() throws Exception {
+        compilationSuccessful(readFromFile("all_equal.txt"));
+    }
+
     @Disabled
     @Test
     void whileStatement() throws Exception {

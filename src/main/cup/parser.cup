@@ -34,6 +34,8 @@ terminal OPEN_BRACKET;
 terminal CLOSE_BRACKET;
 terminal OPEN_CURLY_BRACKET;
 terminal CLOSE_CURLY_BRACKET;
+terminal OPEN_SQUARE_BRACKET;
+terminal CLOSE_SQUARE_BRACKET;
 terminal COMMA;
 terminal SEMI_COLON;
 terminal DOT;
@@ -51,6 +53,9 @@ terminal WRITE;
 terminal READ;
 terminal String IDENTIFIER;
 terminal INIT;
+terminal ALL_EQUAL;
+terminal REPEAT_INLINE;
+
 
 // Non Terminals
 non terminal program;
@@ -73,6 +78,11 @@ non terminal read_param;
 non terminal expression;
 non terminal term;
 non terminal factor;
+non terminal all_equal;
+non terminal repeat_inline;
+non terminal comparable_list;
+non terminal comparable;
+non terminal obj_list;
 
 // Start Symbol Definition
 start with program;
@@ -86,7 +96,8 @@ sentence ::=
 //                | iterator
                   | assignment
                   | s_write
-                  | s_read;
+                  | s_read
+                  | all_equal;
 
 var_declaration ::= var_sencente_dec var_declaration ;
 var_declaration ::= var_sencente_dec;
@@ -147,3 +158,10 @@ write_param ::= STRING_CONSTANT | IDENTIFIER;
 
 s_read ::= READ OPEN_BRACKET read_param CLOSE_BRACKET;
 read_param ::= IDENTIFIER;
+
+all_equal ::= ALL_EQUAL OPEN_BRACKET comparable_list CLOSE_BRACKET {:System.out.println("All equal function");:};
+comparable_list ::= comparable_list COMMA comparable;
+comparable_list ::= comparable;
+comparable  ::= OPEN_SQUARE_BRACKET obj_list CLOSE_SQUARE_BRACKET;
+obj_list ::= obj_list COMMA expression;
+obj_list ::= expression {:System.out.println("Expresion in allequal");:};

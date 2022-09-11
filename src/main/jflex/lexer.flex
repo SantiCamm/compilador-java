@@ -47,6 +47,10 @@ Else = "else"
 Write = "write"
 Read = "read"
 
+/*Special functions*/
+AllEqual = "AllEqual"
+RepeatInline = "REPEAT"
+
 Plus = "+"
 Mult = "*"
 Sub = "-"
@@ -69,6 +73,8 @@ OpenBracket = "("
 CloseBracket = ")"
 OpenCurlyBrace = "{"
 CloseCurlyBrace = "}"
+OpenSquareBracket = "["
+CloseSquareBracket = "]"
 
 Comma = ","
 SemiColon = ";"
@@ -111,6 +117,9 @@ StringConstant = \"(([^\"\n]*)\")
   {Else}                                   { return symbol(ParserSym.ELSE); }
   {While}                                  { return symbol(ParserSym.WHILE); }
 
+   /*Special Function*/
+   {AllEqual}                              { return symbol(ParserSym.ALL_EQUAL); }
+   {RepeatInline}                          { return symbol(ParserSym.REPEAT_INLINE); }
 
   /* Data types */
   {Int}                                     { return symbol(ParserSym.INT); }
@@ -202,6 +211,8 @@ StringConstant = \"(([^\"\n]*)\")
   {CloseBracket}                            { return symbol(ParserSym.CLOSE_BRACKET); }
   {OpenCurlyBrace}                          { return symbol(ParserSym.OPEN_CURLY_BRACKET); }
   {CloseCurlyBrace}                         { return symbol(ParserSym.CLOSE_CURLY_BRACKET); }
+  {OpenSquareBracket}                       { return symbol(ParserSym.OPEN_SQUARE_BRACKET); }
+  {CloseSquareBracket}                      { return symbol(ParserSym.CLOSE_SQUARE_BRACKET); }
 
 
    /* Comparators */

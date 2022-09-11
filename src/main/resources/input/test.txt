@@ -1,17 +1,30 @@
 init {
-    a1, b1 : Float
-    variable1 : Int
-    p1, p2, p3 : String
+    nota_1, nota_2 : Int
+    prom : Float
+    nombre: String
 }
 
-a1=22.05
-b1=.3
+nombre = "Armando Esteban Quito"
+/*nombre = "Armando Jose Raul Esteban Sebastian Demetrio Quito"*/ /*Se pasa de rango de 40 caracteres*/
 
-variable1=2
+nota_1 = 8
+nota_2 = 4
+/* nota_1 = 8000000000000000000 */ /*Se pasa de rango de enteros de 8 bits*/
 
-p1="hola"
-p2="como"
-p3="va?"
+write("Estado del alumno: ")
+write(nombre)
+
+if(nota_1 >= 7 && nota_2 >= 7){
+    write("Promocionado!")
+}else{
+    if((nota_1 < 7 && nota_2 >= 7) || (nota_1 >= 7 && nota_2 < 7)){
+        write("Aprobado!")
+    }else{
+        write("Recursado :(")
+    }
+}
+
+prom = (nota_1 + nota_2) / 2
 
 // pepe
 
