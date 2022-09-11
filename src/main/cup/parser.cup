@@ -1,9 +1,18 @@
 package lyc.compiler;
 
 import java_cup.runtime.*;
+import java.util.List;
+import java.util.ArrayList;
+import lyc.compiler.table.*;
+import java.util.HashMap;
 
 class Parser;
 
+action code {:
+    HashMap<String, SymbolEntry> symbolTable = SymbolTableManager.symbolTable;
+    List<String> idList = new ArrayList<>();
+    DataType dataType;
+:}
 
 // Terminals
 terminal ASSIG;
@@ -40,7 +49,7 @@ terminal ELSE;
 terminal WHILE;
 terminal WRITE;
 terminal READ;
-terminal IDENTIFIER;
+terminal String IDENTIFIER;
 terminal INIT;
 
 // Non Terminals
@@ -81,13 +90,34 @@ sentence ::=
 
 var_declaration ::= var_sencente_dec var_declaration ;
 var_declaration ::= var_sencente_dec;
-var_sencente_dec ::= id_list DOUBLE_DOT data_type;
+var_sencente_dec ::= id_list DOUBLE_DOT data_type {:
+    for (String id : idList) {
+        SymbolTableManager.setDataTypeInTable(id, dataType);
+    }
+    idList.removeAll(idList);
+:};
 data_type ::=
-            INT {: System.out.println("Int data type"); :}
-            | FLOAT {: System.out.println("Float data type"); :}
-            | STRING {: System.out.println("String data type"); :};
-id_list ::= id_list COMMA IDENTIFIER;
-id_list ::= IDENTIFIER:id {: System.out.println("ID declared: " + id); :};
+              INT {:
+                System.out.println("Int data type");
+                dataType = DataType.INTEGER_TYPE;
+            :}
+            | FLOAT {:
+                System.out.println("Float data type");
+                dataType = DataType.FLOAT_TYPE;
+            :}
+            | STRING {:
+                System.out.println("String data type");
+                dataType = DataType.STRING_TYPE;
+            :};
+
+id_list ::= id_list COMMA IDENTIFIER:id {:
+    System.out.println("ID declared: " + id);
+    idList.add(id);
+:} ;
+id_list ::= IDENTIFIER:id {:
+    System.out.println("ID declared: " + id);
+    idList.add(id);
+ :};
 
 decition ::= IF OPEN_BRACKET condition CLOSE_BRACKET OPEN_CURLY_BRACKET block CLOSE_CURLY_BRACKET {: System.out.println("If statement"); :};
 decition ::= IF OPEN_BRACKET condition CLOSE_BRACKET OPEN_CURLY_BRACKET block CLOSE_CURLY_BRACKET ELSE OPEN_CURLY_BRACKET block CLOSE_CURLY_BRACKET{: System.out.println("If statement"); :};

@@ -4,6 +4,15 @@ init {
     p1, p2, p3 : String
 }
 
+a1=22.05
+b1=.3
+
+variable1=2
+
+p1="hola"
+p2="como"
+p3="va?"
+
 // pepe
 
 /* hola mundo */
