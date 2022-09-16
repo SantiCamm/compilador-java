@@ -47,10 +47,10 @@ Else = "else"
 Write = "write"
 Read = "read"
 
+
 /*Special functions*/
 AllEqual = "AllEqual"
 RepeatInline = "REPEAT"
-
 Plus = "+"
 Mult = "*"
 Sub = "-"
@@ -117,9 +117,11 @@ StringConstant = \"(([^\"\n]*)\")
   {Else}                                   { return symbol(ParserSym.ELSE); }
   {While}                                  { return symbol(ParserSym.WHILE); }
 
+
    /*Special Function*/
    {AllEqual}                              { return symbol(ParserSym.ALL_EQUAL); }
    {RepeatInline}                          { return symbol(ParserSym.REPEAT_INLINE); }
+
 
   /* Data types */
   {Int}                                     { return symbol(ParserSym.INT); }
@@ -175,7 +177,11 @@ StringConstant = \"(([^\"\n]*)\")
                                                       SymbolEntry entry = new SymbolEntry("_"+yytext(), DataType.FLOAT_CONS, yytext());
                                                       SymbolTableManager.insertInTable(entry);
                                                 }
-
+                                                
+                                                if(mantissa.length() > 0) {
+                                                  if(mantissa.length() > 8 || Integer.parseInt(mantissa) > 16777216)
+                                                      throw new InvalidFloatException("Mantissa out of range");
+                                                }
                                                 return symbol(ParserSym.FLOAT_CONSTANT, yytext());
                                             }
 
