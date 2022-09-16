@@ -23,7 +23,13 @@ public class LexerTest {
 
   @Test
   public void comment() throws Exception{
-    scan("/*This is a comment*/");
+    scan("/* This is a comment */");
+    assertThat(nextToken()).isEqualTo(ParserSym.EOF);
+  }
+
+  @Test
+  public void comment2() throws Exception{
+    scan("// Comment test");
     assertThat(nextToken()).isEqualTo(ParserSym.EOF);
   }
 
@@ -35,9 +41,15 @@ public class LexerTest {
     });
   }
 
-
+  @Disabled
   @Test
   public void validString() throws Exception {
+    scan("@sdADaSjfla%dfg");
+    assertThat(nextToken()).isEqualTo(ParserSym.STRING_CONSTANT);
+  }
+
+  @Test
+  public void validString2() throws Exception {
     scan("\"%s\"".formatted(getRandomString(1)));
     assertThat(nextToken()).isEqualTo(ParserSym.STRING_CONSTANT);
   }
@@ -75,6 +87,7 @@ public class LexerTest {
     });
   }
 
+//  @Disabled
   @Test
   public void invalidMantissaFloatConstantValue() {
     assertThrows(InvalidFloatException.class, () -> {
@@ -82,6 +95,23 @@ public class LexerTest {
       nextToken();
     });
   }
+
+//  @Disabled
+  @Test
+  public void validFloatConstant() throws Exception {
+    scan(String.valueOf(22.33));
+    assertThat(nextToken()).isEqualTo(ParserSym.FLOAT_CONSTANT);
+    assertThat(nextToken()).isEqualTo(ParserSym.EOF);
+  }
+
+//  @Disabled
+  @Test
+  public void validFloatConstant2() throws Exception {
+    scan(String.valueOf(.22));
+    assertThat(nextToken()).isEqualTo(ParserSym.FLOAT_CONSTANT);
+//    assertThat(nextToken()).isEqualTo(ParserSym.EOF);
+  }
+
 
 //  @Disabled
   @Test
@@ -98,6 +128,45 @@ public class LexerTest {
     assertThat(nextToken()).isEqualTo(ParserSym.CLOSE_BRACKET);
     assertThat(nextToken()).isEqualTo(ParserSym.DIV);
     assertThat(nextToken()).isEqualTo(ParserSym.INTEGER_CONSTANT);
+    assertThat(nextToken()).isEqualTo(ParserSym.EOF);
+  }
+
+//  @Disabled
+  @Test
+  public void variableDeclaration() throws Exception {
+    scan("init { a : Float } ");
+    assertThat(nextToken()).isEqualTo(ParserSym.INIT);
+    assertThat(nextToken()).isEqualTo(ParserSym.OPEN_CURLY_BRACKET);
+    assertThat(nextToken()).isEqualTo(ParserSym.IDENTIFIER);
+    assertThat(nextToken()).isEqualTo(ParserSym.DOUBLE_DOT);
+    assertThat(nextToken()).isEqualTo(ParserSym.FLOAT);
+    assertThat(nextToken()).isEqualTo(ParserSym.CLOSE_CURLY_BRACKET);
+    assertThat(nextToken()).isEqualTo(ParserSym.EOF);
+  }
+
+  @Test
+  public void writeSentence() throws Exception {
+    scan("write(\"pepe\")");
+    assertThat(nextToken()).isEqualTo(ParserSym.WRITE);
+    assertThat(nextToken()).isEqualTo(ParserSym.OPEN_BRACKET);
+    assertThat(nextToken()).isEqualTo(ParserSym.STRING_CONSTANT);
+    assertThat(nextToken()).isEqualTo(ParserSym.CLOSE_BRACKET);
+    assertThat(nextToken()).isEqualTo(ParserSym.EOF);
+  }
+
+//  @Disabled
+  @Test
+  public void ifStatement() throws Exception {
+    scan("if (a > b) {}");
+    assertThat(nextToken()).isEqualTo(ParserSym.IF);
+    assertThat(nextToken()).isEqualTo(ParserSym.OPEN_BRACKET);
+    assertThat(nextToken()).isEqualTo(ParserSym.IDENTIFIER);
+    assertThat(nextToken()).isEqualTo(ParserSym.MAYOR);
+    assertThat(nextToken()).isEqualTo(ParserSym.IDENTIFIER);
+    assertThat(nextToken()).isEqualTo(ParserSym.CLOSE_BRACKET);
+    assertThat(nextToken()).isEqualTo(ParserSym.OPEN_CURLY_BRACKET);
+    assertThat(nextToken()).isEqualTo(ParserSym.CLOSE_CURLY_BRACKET);
+
     assertThat(nextToken()).isEqualTo(ParserSym.EOF);
   }
 
