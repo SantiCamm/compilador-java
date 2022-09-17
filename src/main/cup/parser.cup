@@ -87,17 +87,18 @@ non terminal obj_list;
 // Start Symbol Definition
 start with program;
 
-program ::= block {: System.out.println("Regla 0 - Compilacion Ok"); :};
+program ::= block |{: System.out.println("Compilation Ok"); :};
 block ::= sentence;
 block ::= block sentence;
 sentence ::=
                 INIT {: System.out.println("Variable declaration starts"); :} OPEN_CURLY_BRACKET var_declaration CLOSE_CURLY_BRACKET {: System.out.println("Variable declaration ends"); :}
-                | decition
-//                | iterator
+                  | decition
+                  | iterator
                   | assignment
                   | s_write
                   | s_read
-                  | all_equal;
+                  | all_equal
+                  | repeat_inline;
 
 var_declaration ::= var_sencente_dec var_declaration ;
 var_declaration ::= var_sencente_dec;
@@ -131,14 +132,16 @@ id_list ::= IDENTIFIER:id {:
  :};
 
 decition ::= IF OPEN_BRACKET condition CLOSE_BRACKET OPEN_CURLY_BRACKET block CLOSE_CURLY_BRACKET {: System.out.println("If statement"); :};
-decition ::= IF OPEN_BRACKET condition CLOSE_BRACKET OPEN_CURLY_BRACKET block CLOSE_CURLY_BRACKET ELSE OPEN_CURLY_BRACKET block CLOSE_CURLY_BRACKET{: System.out.println("If statement"); :};
-condition ::= condition AND_COND comparison;
-condition ::= condition OR_COND comparison;
+decition ::= IF OPEN_BRACKET condition CLOSE_BRACKET OPEN_CURLY_BRACKET block CLOSE_CURLY_BRACKET ELSE OPEN_CURLY_BRACKET block CLOSE_CURLY_BRACKET {: System.out.println("If else statement"); :};
+condition ::= comparison AND_COND comparison {: System.out.println("And (&&) condition"); :};
+condition ::= comparison OR_COND comparison {: System.out.println("Or (||) condition"); :};
 condition ::= comparison;
-condition ::= NOT_COND comparison;
+condition ::= NOT_COND comparison {: System.out.println("Not (!) condition"); :};
 comparison ::= expression comparator expression;
 comparison ::= OPEN_BRACKET condition CLOSE_BRACKET;
 comparator ::= MAYOR | LOWER | MAYOR_I | LOWER_I | EQUAL | NOT_EQUAL;
+
+iterator ::= WHILE OPEN_BRACKET condition CLOSE_BRACKET OPEN_CURLY_BRACKET block CLOSE_CURLY_BRACKET {: System.out.println("While statement"); :};
 
 assignment ::= IDENTIFIER ASSIG expression {: System.out.println("Assignment to integer or float constant"); :};
 assignment ::= IDENTIFIER ASSIG STRING_CONSTANT {: System.out.println("Assignment to string constant"); :};
@@ -153,17 +156,17 @@ factor ::= INTEGER_CONSTANT:constant {: System.out.println("Integer constant: " 
 factor ::= FLOAT_CONSTANT:constant {: System.out.println("Float constant: " + constant ); :};
 factor ::= OPEN_BRACKET expression CLOSE_BRACKET {: System.out.println("Factor = (Expression)"); :};
 
-s_write ::= WRITE OPEN_BRACKET write_param CLOSE_BRACKET;
-write_param ::= STRING_CONSTANT | IDENTIFIER;
+s_write ::= WRITE OPEN_BRACKET write_param CLOSE_BRACKET {: System.out.println("Write statement"); :};
+write_param ::= STRING_CONSTANT | IDENTIFIER {: System.out.println("Write parameter"); :};
 
-s_read ::= READ OPEN_BRACKET read_param CLOSE_BRACKET;
-read_param ::= IDENTIFIER;
+s_read ::= READ OPEN_BRACKET read_param CLOSE_BRACKET {: System.out.println("Read statement"); :};
+read_param ::= IDENTIFIER {: System.out.println("Read parameter"); :};
 
-all_equal ::= ALL_EQUAL OPEN_BRACKET comparable_list CLOSE_BRACKET {:System.out.println("All equal function");:};
+all_equal ::= ALL_EQUAL OPEN_BRACKET comparable_list CLOSE_BRACKET {:System.out.println("All-equal function");:};
 comparable_list ::= comparable_list COMMA comparable;
-comparable_list ::= comparable;
+comparable_list ::= comparable COMMA comparable;
 comparable  ::= OPEN_SQUARE_BRACKET obj_list CLOSE_SQUARE_BRACKET;
 obj_list ::= obj_list COMMA expression;
-obj_list ::= expression {:System.out.println("Expresion in allequal");:};
+obj_list ::= expression {:System.out.println("Expression in All-equal");:};
 
-
+repeat_inline ::= REPEAT_INLINE INTEGER_CONSTANT OPEN_SQUARE_BRACKET block CLOSE_SQUARE_BRACKET {:System.out.println("Repeat-inline function");:};

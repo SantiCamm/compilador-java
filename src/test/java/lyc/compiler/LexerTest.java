@@ -41,13 +41,6 @@ public class LexerTest {
     });
   }
 
-  @Disabled
-  @Test
-  public void validString() throws Exception {
-    scan("@sdADaSjfla%dfg");
-    assertThat(nextToken()).isEqualTo(ParserSym.STRING_CONSTANT);
-  }
-
   @Test
   public void validString2() throws Exception {
     scan("\"%s\"".formatted(getRandomString(1)));
@@ -55,14 +48,13 @@ public class LexerTest {
   }
 
   @Test
-  public void invalidIdLength() {
+  public void invalidStringLength() {
     assertThrows(InvalidLengthException.class, () -> {
       scan("\"" + getRandomString(2) + "\"");
       nextToken();
     });
   }
 
-//  @Disabled
   @Test
   public void invalidPositiveIntegerConstantValue() {
     assertThrows(InvalidIntegerException.class, () -> {
@@ -87,7 +79,6 @@ public class LexerTest {
     });
   }
 
-//  @Disabled
   @Test
   public void invalidMantissaFloatConstantValue() {
     assertThrows(InvalidFloatException.class, () -> {
@@ -96,7 +87,6 @@ public class LexerTest {
     });
   }
 
-//  @Disabled
   @Test
   public void validFloatConstant() throws Exception {
     scan(String.valueOf(22.33));
@@ -104,7 +94,6 @@ public class LexerTest {
     assertThat(nextToken()).isEqualTo(ParserSym.EOF);
   }
 
-//  @Disabled
   @Test
   public void validFloatConstant2() throws Exception {
     scan(String.valueOf(.22));
@@ -112,8 +101,6 @@ public class LexerTest {
 //    assertThat(nextToken()).isEqualTo(ParserSym.EOF);
   }
 
-
-//  @Disabled
   @Test
   public void assignmentWithExpressions() throws Exception {
     scan("c=d*(e-21)/4");
@@ -131,7 +118,6 @@ public class LexerTest {
     assertThat(nextToken()).isEqualTo(ParserSym.EOF);
   }
 
-//  @Disabled
   @Test
   public void variableDeclaration() throws Exception {
     scan("init { a : Float } ");
@@ -154,7 +140,6 @@ public class LexerTest {
     assertThat(nextToken()).isEqualTo(ParserSym.EOF);
   }
 
-//  @Disabled
   @Test
   public void ifStatement() throws Exception {
     scan("if (a > b) {}");
@@ -170,7 +155,6 @@ public class LexerTest {
     assertThat(nextToken()).isEqualTo(ParserSym.EOF);
   }
 
-//  @Disabled
   @Test
   public void unknownCharacter() {
     assertThrows(UnknownCharacterException.class, () -> {

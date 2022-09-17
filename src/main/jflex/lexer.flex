@@ -136,6 +136,7 @@ StringConstant = \"(([^\"\n]*)\")
 
   /* Identifiers */
   {Identifier}                             {
+                                            /* Validate length --> how much? */
                                               if(!SymbolTableManager.existsInTable(yytext())){
                                                     SymbolEntry entry = new SymbolEntry(yytext());
                                                     SymbolTableManager.insertInTable(entry);

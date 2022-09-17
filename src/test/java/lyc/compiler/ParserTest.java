@@ -46,7 +46,7 @@ public class ParserTest {
         compilationSuccessful(readFromFile("read.txt"));
     }
 
-    @Disabled
+//    @Disabled
     @Test
     void comment() throws Exception {
         compilationSuccessful(readFromFile("comment.txt"));
@@ -87,7 +87,13 @@ public class ParserTest {
         compilationSuccessful(readFromFile("all_equal.txt"));
     }
 
-    @Disabled
+//    @Disabled
+    @Test
+    void repeatInline() throws Exception {
+        compilationSuccessful(readFromFile("repeat_inline.txt"));
+    }
+
+//    @Disabled
     @Test
     void whileStatement() throws Exception {
         compilationSuccessful(readFromFile("while.txt"));
