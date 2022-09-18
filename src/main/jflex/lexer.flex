@@ -48,7 +48,6 @@ Write = "write"
 Read = "read"
 
 
-/*Special functions*/
 AllEqual = "AllEqual"
 RepeatInline = "REPEAT"
 Plus = "+"
@@ -100,7 +99,7 @@ Identifier = {Letter} ({Letter}|{Digit}|_)*
 IntegerConstant = {Digit}+
 InvalidIntegerConstant = 0+{Digit19}+
 //FloatConstant = (({Digit}|{Digit19}{Digit}+)\.{Digit}+) | \.{Digit}+
-FloatConstant = (({Digit}|{Digit19}{Digit}+)?\.{Digit}+) //otra opcion
+FloatConstant = (({Digit}|{Digit19}{Digit}+)?\.{Digit}+)
 StringConstant = \"(([^\"\n]*)\")
 %%
 
@@ -118,9 +117,9 @@ StringConstant = \"(([^\"\n]*)\")
   {While}                                  { return symbol(ParserSym.WHILE); }
 
 
-   /*Special Function*/
-   {AllEqual}                              { return symbol(ParserSym.ALL_EQUAL); }
-   {RepeatInline}                          { return symbol(ParserSym.REPEAT_INLINE); }
+  /*Special functions*/
+  {AllEqual}                              { return symbol(ParserSym.ALL_EQUAL); }
+  {RepeatInline}                          { return symbol(ParserSym.REPEAT_INLINE); }
 
 
   /* Data types */
@@ -136,7 +135,9 @@ StringConstant = \"(([^\"\n]*)\")
 
   /* Identifiers */
   {Identifier}                             {
-                                            /* Validate length --> how much? */
+                                              if(yytext().length() > 15) {
+                                                  throw new InvalidLengthException("Identifier length not allowed: " + yytext());
+                                              }
                                               if(!SymbolTableManager.existsInTable(yytext())){
                                                     SymbolEntry entry = new SymbolEntry(yytext());
                                                     SymbolTableManager.insertInTable(entry);

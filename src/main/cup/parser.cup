@@ -135,11 +135,11 @@ decition ::= IF OPEN_BRACKET condition CLOSE_BRACKET OPEN_CURLY_BRACKET block CL
 decition ::= IF OPEN_BRACKET condition CLOSE_BRACKET OPEN_CURLY_BRACKET block CLOSE_CURLY_BRACKET ELSE OPEN_CURLY_BRACKET block CLOSE_CURLY_BRACKET {: System.out.println("If else statement"); :};
 condition ::= comparison AND_COND comparison {: System.out.println("And (&&) condition"); :};
 condition ::= comparison OR_COND comparison {: System.out.println("Or (||) condition"); :};
-condition ::= comparison;
+condition ::= comparison {: System.out.println("Condition = Comparison"); :};
 condition ::= NOT_COND comparison {: System.out.println("Not (!) condition"); :};
-comparison ::= expression comparator expression;
-comparison ::= OPEN_BRACKET condition CLOSE_BRACKET;
-comparator ::= MAYOR | LOWER | MAYOR_I | LOWER_I | EQUAL | NOT_EQUAL;
+comparison ::= expression comparator expression {: System.out.println("Comparison"); :};
+comparison ::= OPEN_BRACKET condition CLOSE_BRACKET {: System.out.println("Comparison"); :};
+comparator ::= MAYOR | LOWER | MAYOR_I | LOWER_I | EQUAL | NOT_EQUAL {: System.out.println("Comparator"); :};
 
 iterator ::= WHILE OPEN_BRACKET condition CLOSE_BRACKET OPEN_CURLY_BRACKET block CLOSE_CURLY_BRACKET {: System.out.println("While statement"); :};
 
