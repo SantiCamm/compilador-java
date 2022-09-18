@@ -1,8 +1,8 @@
 /* Declaracion de variables */
 init {
-    nota_1, nota_2 : Int
-    prom : Float
-    nombre: String
+    nota_1, nota_2, id : Int
+    prom,numero1,numero2 : Float
+    nombre, pedro: String
 }
 
 /* Declaracion invalida de variables */
