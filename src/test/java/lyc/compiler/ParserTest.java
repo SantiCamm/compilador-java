@@ -16,73 +16,71 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 //@Disabled
 public class ParserTest {
 
-//    @Disabled
     @Test
     public void assignmentWithExpression() throws Exception {
         compilationSuccessful("c=d*(e-21)/4");
     }
 
-//    @Disabled
     @Test
     public void syntaxError() {
         compilationError("1234");
     }
 
-//    @Disabled
     @Test
     void assignments() throws Exception {
         compilationSuccessful(readFromFile("assignments.txt"));
     }
 
-//    @Disabled
     @Test
     void write() throws Exception {
         compilationSuccessful(readFromFile("write.txt"));
     }
 
-//    @Disabled
     @Test
     void read() throws Exception {
         compilationSuccessful(readFromFile("read.txt"));
     }
 
-    @Disabled
     @Test
     void comment() throws Exception {
         compilationSuccessful(readFromFile("comment.txt"));
     }
 
-//    @Disabled
     @Test
     void init() throws Exception {
         compilationSuccessful(readFromFile("init.txt"));
     }
 
-//    @Disabled
     @Test
     void and() throws Exception {
         compilationSuccessful(readFromFile("and.txt"));
     }
 
-//    @Disabled
     @Test
     void or() throws Exception {
         compilationSuccessful(readFromFile("or.txt"));
     }
 
-//    @Disabled
     @Test
     void not() throws Exception {
         compilationSuccessful(readFromFile("not.txt"));
     }
 
-//    @Disabled
     @Test
     void ifStatement() throws Exception {
         compilationSuccessful(readFromFile("if.txt"));
     }
 
-    @Disabled
+    @Test
+    void allEqual() throws Exception {
+        compilationSuccessful(readFromFile("all_equal.txt"));
+    }
+
+    @Test
+    void repeatInline() throws Exception {
+        compilationSuccessful(readFromFile("repeat_inline.txt"));
+    }
+
     @Test
     void whileStatement() throws Exception {
         compilationSuccessful(readFromFile("while.txt"));

@@ -2,7 +2,7 @@ package lyc.compiler;
 
 import java_cup.runtime.Symbol;
 import lyc.compiler.ParserSym;
-import lyc.compiler.model.*;
+import lyc.compiler.model.*;import lyc.compiler.table.DataType;import lyc.compiler.table.SymbolEntry;import lyc.compiler.table.SymbolTableManager;
 import static lyc.compiler.constants.Constants.*;
 
 %%
@@ -47,6 +47,9 @@ Else = "else"
 Write = "write"
 Read = "read"
 
+
+AllEqual = "AllEqual"
+RepeatInline = "REPEAT"
 Plus = "+"
 Mult = "*"
 Sub = "-"
@@ -69,6 +72,8 @@ OpenBracket = "("
 CloseBracket = ")"
 OpenCurlyBrace = "{"
 CloseCurlyBrace = "}"
+OpenSquareBracket = "["
+CloseSquareBracket = "]"
 
 Comma = ","
 SemiColon = ";"
@@ -94,7 +99,7 @@ Identifier = {Letter} ({Letter}|{Digit}|_)*
 IntegerConstant = {Digit}+
 InvalidIntegerConstant = 0+{Digit19}+
 //FloatConstant = (({Digit}|{Digit19}{Digit}+)\.{Digit}+) | \.{Digit}+
-FloatConstant = (({Digit}|{Digit19}{Digit}+)?\.{Digit}+) //otra opcion
+FloatConstant = (({Digit}|{Digit19}{Digit}+)?\.{Digit}+)
 StringConstant = \"(([^\"\n]*)\")
 %%
 
@@ -112,6 +117,11 @@ StringConstant = \"(([^\"\n]*)\")
   {While}                                  { return symbol(ParserSym.WHILE); }
 
 
+  /*Special functions*/
+  {AllEqual}                              { return symbol(ParserSym.ALL_EQUAL); }
+  {RepeatInline}                          { return symbol(ParserSym.REPEAT_INLINE); }
+
+
   /* Data types */
   {Int}                                     { return symbol(ParserSym.INT); }
   {Float}                                   { return symbol(ParserSym.FLOAT); }
@@ -124,20 +134,29 @@ StringConstant = \"(([^\"\n]*)\")
 
 
   /* Identifiers */
-  {Identifier}                             { return symbol(ParserSym.IDENTIFIER, yytext()); }
+  {Identifier}                             {
+                                              if(yytext().length() > 15) {
+                                                  throw new InvalidLengthException("Identifier length not allowed: " + yytext());
+                                              }
+                                              if(!SymbolTableManager.existsInTable(yytext())){
+                                                    SymbolEntry entry = new SymbolEntry(yytext());
+                                                    SymbolTableManager.insertInTable(entry);
+                                              }
+                                              return symbol(ParserSym.IDENTIFIER, yytext());
+                                          }
 
   /* Constants */
   {IntegerConstant}                        {
-                                                if(yytext().length() > 5 ) {
-                                                    throw new InvalidIntegerException(yytext());
+                                                if(yytext().length() > 5 || Integer.valueOf(yytext()) > 65535) {
+                                                    throw new InvalidIntegerException("Integer out of range: " + yytext());
                                                 }
-                                                else if(Integer.valueOf(yytext()) > 65535)
-                                                {
-                                                    throw new InvalidIntegerException(yytext());
+
+                                                if(!SymbolTableManager.existsInTable(yytext())){
+                                                      SymbolEntry entry = new SymbolEntry("_"+yytext(), DataType.INTEGER_CONS, yytext());
+                                                      SymbolTableManager.insertInTable(entry);
                                                 }
-                                                 else {
-                                                     return symbol(ParserSym.INTEGER_CONSTANT, yytext());
-                                                 }
+
+                                                return symbol(ParserSym.INTEGER_CONSTANT, yytext());
                                             }
 
   {FloatConstant}                          {
@@ -145,13 +164,22 @@ StringConstant = \"(([^\"\n]*)\")
                                                 String exp = num[0];
                                                 String mantissa = num[1];
 
-
                                                 if(exp.length() > 0)
                                                     {
                                                        if(exp.length() > 3 || Integer.parseInt(exp) > 256 )
-                                                           throw new InvalidFloatException("Exponent out of range");
+                                                           throw new InvalidFloatException("Exponent out of range: " + yytext());
                                                     }
 
+                                                if(mantissa.length() > 0) {
+                                                  if(mantissa.length() > 8 || Integer.parseInt(mantissa) > 16777216)
+                                                      throw new InvalidFloatException("Mantissa out of range: " + yytext());
+                                                }
+
+                                                if(!SymbolTableManager.existsInTable(yytext())){
+                                                      SymbolEntry entry = new SymbolEntry("_"+yytext(), DataType.FLOAT_CONS, yytext());
+                                                      SymbolTableManager.insertInTable(entry);
+                                                }
+                                                
                                                 if(mantissa.length() > 0) {
                                                   if(mantissa.length() > 8 || Integer.parseInt(mantissa) > 16777216)
                                                       throw new InvalidFloatException("Mantissa out of range");
@@ -162,9 +190,17 @@ StringConstant = \"(([^\"\n]*)\")
   {StringConstant}                         {
                                                 sb = new StringBuffer(yytext());
                                                 if(sb.length() > 42) //quotes add 2 to max length
-                                                    throw new InvalidLengthException(yytext());
-                                                else
-                                                    return symbol(ParserSym.STRING_CONSTANT, yytext());
+                                                    throw new InvalidLengthException("String out of range: " + yytext());
+
+                                                sb.replace(0,1,"");
+                                                sb.replace(sb.length()-1,sb.length(),""); //trim extra quotes
+
+                                                if(!SymbolTableManager.existsInTable(yytext())){
+                                                      SymbolEntry entry = new SymbolEntry("_"+sb.toString(), DataType.STRING_CONS, sb.toString(), Integer.toString(sb.length()));
+                                                      SymbolTableManager.insertInTable(entry);
+                                                }
+
+                                                return symbol(ParserSym.STRING_CONSTANT, yytext());
                                             }
 
 
@@ -183,6 +219,8 @@ StringConstant = \"(([^\"\n]*)\")
   {CloseBracket}                            { return symbol(ParserSym.CLOSE_BRACKET); }
   {OpenCurlyBrace}                          { return symbol(ParserSym.OPEN_CURLY_BRACKET); }
   {CloseCurlyBrace}                         { return symbol(ParserSym.CLOSE_CURLY_BRACKET); }
+  {OpenSquareBracket}                       { return symbol(ParserSym.OPEN_SQUARE_BRACKET); }
+  {CloseSquareBracket}                      { return symbol(ParserSym.CLOSE_SQUARE_BRACKET); }
 
 
    /* Comparators */
@@ -213,5 +251,5 @@ StringConstant = \"(([^\"\n]*)\")
    {Comment}                                { /* ignore */ }
 
    /* Error fallback */
-   ^[]                                      { throw new UnknownCharacterException(yytext()); }
-   {InvalidCharacter}                       { throw new UnknownCharacterException(yytext()); }
+   ^[]                                      { throw new UnknownCharacterException("Unknown character: " + yytext()); }
+   {InvalidCharacter}                       { throw new UnknownCharacterException("Unknown character: " + yytext()); }
