@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.ArrayList;
 import lyc.compiler.table.*;
 import java.util.HashMap;
+import lyc.compiler.terceto.*;
 
 class Parser;
 
@@ -12,6 +13,7 @@ action code {:
     HashMap<String, SymbolEntry> symbolTable = SymbolTableManager.symbolTable;
     List<String> idList = new ArrayList<>();
     DataType dataType;
+    TercetoManager tercetoManager;
 :}
 
 // Terminals
@@ -101,34 +103,49 @@ sentence ::=
                   | repeat_inline;
 
 var_declaration ::= var_sencente_dec var_declaration ;
-var_declaration ::= var_sencente_dec;
+var_declaration ::= var_sencente_dec {:
+                    tercetoManager.var_declarationIdx = tercetoManager.var_sencente_decIdx;
+                :};
 var_sencente_dec ::= id_list DOUBLE_DOT data_type {:
-    for (String id : idList) {
-        SymbolTableManager.setDataTypeInTable(id, dataType);
-    }
-    idList.removeAll(idList);
-:};
+                    for (String id : idList) {
+                        SymbolTableManager.setDataTypeInTable(id, dataType);
+                    }
+                    idList.removeAll(idList);
+
+                    tercetoManager.var_sencente_decIdx = new Terceto(":", tercetoManager.id_listIdx.getTercetoNumber(), tercetoManager.data_typeIdx.getTercetoNumber());
+                :};
 data_type ::=
-              INT {:
+              INT:type {:
                 System.out.println("Int data type");
                 dataType = DataType.INTEGER_TYPE;
+
+                tercetoManager.data_typeIdx = new Terceto(type);
+
             :}
-            | FLOAT {:
+            | FLOAT:type {:
                 System.out.println("Float data type");
                 dataType = DataType.FLOAT_TYPE;
+
+                tercetoManager.data_typeIdx = new Terceto(type);
             :}
-            | STRING {:
+            | STRING:type {:
                 System.out.println("String data type");
                 dataType = DataType.STRING_TYPE;
+
+                tercetoManager.data_typeIdx = new Terceto(type);
             :};
 
 id_list ::= id_list COMMA IDENTIFIER:id {:
     System.out.println("ID declared: " + id);
     idList.add(id);
+
+    tercetoManager.id_listIdx = new Terceto(",", tercetoManager.id_listIdx.getTercetoNumber(), id);
 :} ;
 id_list ::= IDENTIFIER:id {:
     System.out.println("ID declared: " + id);
     idList.add(id);
+
+    tercetoManager.id_listIdx = new Terceto(id);
  :};
 
 decition ::= IF OPEN_BRACKET condition CLOSE_BRACKET OPEN_CURLY_BRACKET block CLOSE_CURLY_BRACKET {: System.out.println("If statement"); :};
