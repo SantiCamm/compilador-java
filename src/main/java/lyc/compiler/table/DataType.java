@@ -7,7 +7,8 @@ public enum DataType {
     STRING_TYPE("String"),
     INTEGER_CONS("INT_CTE"),
     FLOAT_CONS("FLOAT_CTE"),
-    STRING_CONS("STRING_CTE");
+    STRING_CONS("STRING_CTE"),
+    ID("IDENTIFIER");
 
     private String name;
 
