@@ -15,9 +15,15 @@ action code {:
     HashMap<String, SymbolEntry> symbolTable = SymbolTableManager.symbolTable;
     List<String> idList = new ArrayList<>();
     DataType dataType;
-    Stack dataTypeStack = new Stack<DataType>();
-    Stack idStack = new Stack<String>();
+    Stack auxExprStack = new Stack<Integer>();
+    Stack auxTermStack = new Stack<Integer>();
+    Stack auxFactStack = new Stack<Integer>();
     TercetoManager tercetoManager;
+
+    int exprIdx;
+    int termIdx;
+    int factIdx;
+
 :}
 
 // Terminals
@@ -158,72 +164,88 @@ iterator ::= WHILE OPEN_BRACKET condition CLOSE_BRACKET OPEN_CURLY_BRACKET block
 
 assignment ::= IDENTIFIER:id ASSIG expression {:
             System.out.println("Assignment to integer or float constant");
-            Terceto terceto = new Terceto("=", id, TercetoManager.expressionIdx.getTercetoNumber());
-            TercetoManager.assignmentIdx.setTerceto(terceto);
+            if(Utils.checkIdExpresionType(id, true)){
+                Terceto terceto = new Terceto("=", id, TercetoManager.expressionIdx.getTercetoNumber());
+                TercetoManager.assignmentIdx.setTerceto(terceto);
+            }
+
         :};
 assignment ::= IDENTIFIER:id ASSIG STRING_CONSTANT:str {:
             System.out.println("Assignment to string constant");
             Terceto terceto = new Terceto("=", id.toString(), str.toString());
             TercetoManager.assignmentIdx.setTerceto(terceto);
         :};
-expression ::= expression PLUS term {:
+expression ::= expression {: auxExprStack.push(TercetoManager.expressionIdx.getTercetoNumber()); :} PLUS term {:
             System.out.println("+");
 
-            String fact1 = TercetoManager.expressionIdx.getTerceto()
+            exprIdx = (int) auxExprStack.pop();
+            termIdx = TercetoManager.termIdx.getTercetoNumber();
 
-            if(Utils.checkExpresionTypes(dataTypeStack, idStack)){
-                Terceto terceto = new Terceto("+", TercetoManager.expressionIdx.getTercetoNumber(), TercetoManager.termIdx.getTercetoNumber());
-                TercetoManager.expressionIdx.setTerceto(terceto);
-            }
+            Terceto terceto = new Terceto("+", exprIdx, termIdx);
+            TercetoManager.expressionIdx.setTerceto(terceto);
+
         :};
-expression ::= expression SUB term {:
+expression ::= expression {: auxExprStack.push(TercetoManager.expressionIdx.getTercetoNumber()); :} SUB term {:
             System.out.println("-");
-            Terceto terceto = new Terceto("-", TercetoManager.expressionIdx.getTercetoNumber(), TercetoManager.termIdx.getTercetoNumber());
+
+            exprIdx = (int) auxExprStack.pop();
+            termIdx = TercetoManager.termIdx.getTercetoNumber();
+
+            Terceto terceto = new Terceto("-", termIdx, factIdx);
             TercetoManager.expressionIdx.setTerceto(terceto);
         :};
 expression ::= term {:
             System.out.println("Expression = Term");
             TercetoManager.expressionIdx.setTerceto(TercetoManager.termIdx.getTerceto());
         :};
-term ::= term MULT factor {:
+term ::= term {:auxTermStack.push(TercetoManager.termIdx.getTerceto().getNumber());:} MULT factor {:
+
             System.out.println("*");
-            Terceto terceto = new Terceto("*", TercetoManager.termIdx.getTercetoNumber(), TercetoManager.factorIdx.getTercetoNumber());
+
+            termIdx = (int) auxTermStack.pop();
+            factIdx = TercetoManager.factorIdx.getTercetoNumber();
+
+            Terceto terceto = new Terceto("*", termIdx, factIdx);
             TercetoManager.termIdx.setTerceto(terceto);
         :};
-term ::= term DIV factor {:
+term ::= term {:auxTermStack.push(TercetoManager.termIdx.getTerceto().getNumber());:} DIV factor {:
             System.out.println("/");
-            Terceto terceto = new Terceto("/", TercetoManager.termIdx.getTercetoNumber(), TercetoManager.factorIdx.getTercetoNumber());
+
+            termIdx = (int) auxTermStack.pop();
+            factIdx = TercetoManager.factorIdx.getTercetoNumber();
+
+            Terceto terceto = new Terceto("/", termIdx, factIdx);
             TercetoManager.termIdx.setTerceto(terceto);
         :};
 term ::= factor {:
             System.out.println("Term = factor");
+
             TercetoManager.termIdx.setTerceto(TercetoManager.factorIdx.getTerceto());
         :};
 factor ::= IDENTIFIER:id  {:
             System.out.println("Id: " + id);
-            dataTypeStack.push(DataType.ID);
-            idStack.push(id);
 
-            Terceto terceto = new Terceto(id.toString());
-            TercetoManager.factorIdx.setTerceto(terceto);
+            if(Utils.checkIdExpresionType(id, false)){
+                Terceto terceto = new Terceto(id.toString());
+                TercetoManager.factorIdx.setTerceto(terceto);
+            }
         :};
 
 factor ::= INTEGER_CONSTANT:constant {:
             System.out.println("Integer constant: " + constant );
-            dataTypeStack.push(DataType.INTEGER_CONS);
 
             Terceto terceto = new Terceto(constant.toString());
             TercetoManager.factorIdx.setTerceto(terceto);
         :};
 factor ::= FLOAT_CONSTANT:constant {:
             System.out.println("Float constant: " + constant);
-            dataTypeStack.push(DataType.FLOAT_CONS);
 
             Terceto terceto = new Terceto(constant.toString());
             TercetoManager.factorIdx.setTerceto(terceto);
         :};
 factor ::= OPEN_BRACKET expression CLOSE_BRACKET {:
             System.out.println("Factor = (Expression)");
+            TercetoManager.factorIdx.setTerceto(TercetoManager.expressionIdx.getTerceto());
         :};
 
 s_write ::= WRITE OPEN_BRACKET write_param CLOSE_BRACKET {: System.out.println("Write statement"); :};
