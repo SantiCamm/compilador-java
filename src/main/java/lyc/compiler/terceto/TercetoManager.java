@@ -7,6 +7,10 @@ public class TercetoManager {
 
     public static List<Terceto> tercetoList = new ArrayList<>();
 
+    public static int getLastTerceto () {
+        return tercetoList.get(tercetoList.size() - 1 ).getNumber();
+    }
+
     public static TercetoIndex programIdx = new TercetoIndex();
     public static TercetoIndex blockIdx = new TercetoIndex();
     public static TercetoIndex sentenceIdx = new TercetoIndex();

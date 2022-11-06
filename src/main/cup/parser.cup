@@ -18,11 +18,27 @@ action code {:
     Stack auxExprStack = new Stack<Integer>();
     Stack auxTermStack = new Stack<Integer>();
     Stack auxFactStack = new Stack<Integer>();
+    Stack auxCondStack = new Stack<Integer>();
+    Stack auxCondExprStack = new Stack<Integer>();
     TercetoManager tercetoManager;
 
+    // Expressions
     int exprIdx;
     int termIdx;
     int factIdx;
+
+    // Conditions
+    int condExpr;
+    int currLogOp = -1; // 0 --> OR | 1 --> AND
+    int complexCond = -1;
+    String currentComparator;
+    String invCurrentComparator;
+
+    int condIdx;
+    int sentIdx;
+
+    // Repeat_inline
+    int auxRepInl = 0;
 
 :}
 
@@ -78,6 +94,7 @@ non terminal var_sencente_dec;
 non terminal data_type;
 non terminal id_list;
 non terminal decition;
+non terminal decitionAux;
 non terminal condition;
 non terminal comparison;
 non terminal comparator;
@@ -95,6 +112,8 @@ non terminal repeat_inline;
 non terminal comparable_list;
 non terminal comparable;
 non terminal obj_list;
+non terminal trueBody;
+non terminal falseBody;
 
 // Start Symbol Definition
 start with program;
@@ -150,17 +169,139 @@ id_list ::= IDENTIFIER:id {:
 
  :};
 
-decition ::= IF OPEN_BRACKET condition CLOSE_BRACKET OPEN_CURLY_BRACKET block CLOSE_CURLY_BRACKET {: System.out.println("If statement"); :};
-decition ::= IF OPEN_BRACKET condition CLOSE_BRACKET OPEN_CURLY_BRACKET block CLOSE_CURLY_BRACKET ELSE OPEN_CURLY_BRACKET block CLOSE_CURLY_BRACKET {: System.out.println("If else statement"); :};
-condition ::= comparison AND_COND comparison {: System.out.println("And (&&) condition"); :};
-condition ::= comparison OR_COND comparison {: System.out.println("Or (||) condition"); :};
-condition ::= comparison {: System.out.println("Condition = Comparison"); :};
-condition ::= NOT_COND comparison {: System.out.println("Not (!) condition"); :};
-comparison ::= expression comparator expression {: System.out.println("Comparison"); :};
-comparison ::= OPEN_BRACKET condition CLOSE_BRACKET {: System.out.println("Comparison"); :};
-comparator ::= MAYOR | LOWER | MAYOR_I | LOWER_I | EQUAL | NOT_EQUAL {: System.out.println("Comparator"); :};
+decition ::= decitionAux trueBody
+            {:
+                Terceto terAux;
+                if (currLogOp == 1)
+                {
+                    terAux = (Terceto) auxCondStack.pop();
+                    terAux.updateTerceto(2, String.valueOf(TercetoManager.getLastTerceto()+1));
 
-iterator ::= WHILE OPEN_BRACKET condition CLOSE_BRACKET OPEN_CURLY_BRACKET block CLOSE_CURLY_BRACKET {: System.out.println("While statement"); :};
+                    terAux = (Terceto) auxCondStack.pop();
+                    terAux.updateTerceto(2, String.valueOf(TercetoManager.getLastTerceto()+1));
+
+                } else {
+                    terAux = (Terceto) auxCondStack.pop();
+                    terAux.updateTerceto(2, String.valueOf(TercetoManager.getLastTerceto()));
+                }
+
+                currLogOp = -1;
+                complexCond = -1;
+            :};
+
+
+decition ::= decitionAux trueBody
+            {:
+                // Fin bloque V
+                Terceto terAux;
+
+                if (currLogOp == 1)
+                {
+                    terAux = (Terceto) auxCondStack.pop();
+                    terAux.updateTerceto(2, String.valueOf(TercetoManager.getLastTerceto()+2));
+                    terAux = (Terceto) auxCondStack.pop();
+                    terAux.updateTerceto(2, String.valueOf(TercetoManager.getLastTerceto()+2));
+                }
+                else {
+                    terAux = (Terceto) auxCondStack.pop();
+                    terAux.updateTerceto(2, String.valueOf(TercetoManager.getLastTerceto()+2));
+                }
+
+                Terceto tercetoBi = new Terceto("BI");
+                auxCondStack.push(tercetoBi);
+
+                currLogOp = -1;
+                complexCond = -1;
+            :}
+             falseBody
+             {:
+                // Fin bloque F
+                System.out.println("If else statement");
+                Terceto terAux;
+
+                terAux = (Terceto) auxCondStack.pop();
+                terAux.updateTerceto(2, String.valueOf(TercetoManager.getLastTerceto()+1));
+             :};
+
+decitionAux ::= IF OPEN_BRACKET condition CLOSE_BRACKET
+            {:
+                if(complexCond == 1 && currLogOp == 0) {
+                Terceto terAux = (Terceto) auxCondStack.pop();
+                Terceto terOr = (Terceto) auxCondStack.pop();
+                terOr.updateTerceto(2, String.valueOf(condIdx+1));
+                auxCondStack.push(terOr);
+                auxCondStack.push(terAux);
+                }
+             :};
+trueBody ::= OPEN_CURLY_BRACKET block CLOSE_CURLY_BRACKET;
+falseBody ::= ELSE OPEN_CURLY_BRACKET block CLOSE_CURLY_BRACKET;
+condition ::= comparison {:System.out.println("Comparison");:} AND_COND {: currLogOp=1; complexCond=1; :} comparison {: System.out.println("And (&&) condition"); condIdx = TercetoManager.comparatorIdx.getTercetoNumber(); :};
+condition ::= comparison {:System.out.println("Comparison");:} OR_COND {: currLogOp=0; complexCond=1; :} comparison {: System.out.println("Or (||) condition"); condIdx = TercetoManager.comparatorIdx.getTercetoNumber(); :};
+condition ::= comparison {: System.out.println("Condition = Comparison"); condIdx = TercetoManager.comparatorIdx.getTercetoNumber(); :};
+condition ::= NOT_COND comparison
+            {:
+                System.out.println("Not (!) condition");
+                Terceto auxComparator = (Terceto) auxCondStack.pop();
+                auxComparator.negateTerceto();
+                auxCondStack.push(auxComparator);
+            :};
+comparison ::= expression {: auxCondExprStack.push(TercetoManager.expressionIdx.getTercetoNumber()); :} comparator expression
+               {:
+                   System.out.println("Comparison");
+
+                    // creo comparacion (CMP, [], [])
+                    condExpr = (int) auxCondExprStack.pop();
+                    Terceto terceto = new Terceto("CMP", condExpr, TercetoManager.expressionIdx.getTercetoNumber());
+                    TercetoManager.comparisonIdx.setTerceto(terceto);
+
+                   // Si la condicion es un OR (estoy en la segunda comparacion, desapilo y actualizo el terceto de la primer condicion)
+                   if(currLogOp == 0) {
+                        Terceto auxComparator = (Terceto) auxCondStack.pop();
+                        auxComparator.negateTerceto();
+                        auxCondStack.push(auxComparator);
+                   }
+
+                   Terceto tercetoComparator = new Terceto(currentComparator);
+                   TercetoManager.comparatorIdx.setTerceto(tercetoComparator);
+                   auxCondStack.push(TercetoManager.comparatorIdx.getTerceto()); // apilo para luego actualizar
+               :};
+comparison ::= OPEN_BRACKET condition CLOSE_BRACKET {: System.out.println("Comparison"); :};
+comparator ::= MAYOR {: currentComparator = "BLE";:}
+               | LOWER {: currentComparator = "BGE";:}
+               | MAYOR_I {: currentComparator = "BLT";:}
+               | LOWER_I {: currentComparator = "BGT";:}
+               | EQUAL {: currentComparator = "BNE";:}
+               | NOT_EQUAL {: currentComparator = "BQE"; System.out.println("Comparator"); :};
+
+iterator ::= WHILE OPEN_BRACKET {: Terceto tercetoEt = new Terceto("ET_WHILE"); TercetoManager.iteratorIdx.setTerceto(tercetoEt); :} condition {:
+                if(complexCond == 1 && currLogOp == 0) {
+                     Terceto terAux = (Terceto) auxCondStack.pop();
+                     Terceto terOr = (Terceto) auxCondStack.pop();
+                     terOr.updateTerceto(2, String.valueOf(condIdx+1));
+                     auxCondStack.push(terOr);
+                     auxCondStack.push(terAux);
+                     } :} CLOSE_BRACKET OPEN_CURLY_BRACKET block CLOSE_CURLY_BRACKET {:
+                 System.out.println("While statement");
+
+                 Terceto terAux;
+                 if (currLogOp == 1)
+                 {
+                     terAux = (Terceto) auxCondStack.pop();
+                     terAux.updateTerceto(2, String.valueOf(TercetoManager.getLastTerceto()+2));
+
+                     terAux = (Terceto) auxCondStack.pop();
+                     terAux.updateTerceto(2, String.valueOf(TercetoManager.getLastTerceto()+2));
+
+                 } else {
+                     terAux = (Terceto) auxCondStack.pop();
+                     terAux.updateTerceto(2, String.valueOf(TercetoManager.getLastTerceto()+2));
+                 }
+
+                 currLogOp = -1;
+                 complexCond = -1;
+
+                 Terceto tercetoBi = new Terceto("BI", TercetoManager.iteratorIdx.getTercetoNumber());
+             :};
 
 assignment ::= IDENTIFIER:id ASSIG expression {:
             System.out.println("Assignment to integer or float constant");
@@ -248,11 +389,17 @@ factor ::= OPEN_BRACKET expression CLOSE_BRACKET {:
             TercetoManager.factorIdx.setTerceto(TercetoManager.expressionIdx.getTerceto());
         :};
 
-s_write ::= WRITE OPEN_BRACKET write_param CLOSE_BRACKET {: System.out.println("Write statement"); :};
-write_param ::= STRING_CONSTANT | IDENTIFIER {: System.out.println("Write parameter"); :};
+s_write ::= WRITE OPEN_BRACKET STRING_CONSTANT:string_constant CLOSE_BRACKET {:
+            System.out.println("Write statement");
+            Terceto terceto = new Terceto("write", string_constant.toString()); :}
+            | WRITE OPEN_BRACKET IDENTIFIER:id CLOSE_BRACKET {:
+            System.out.println("Write statement");
+            Terceto terceto = new Terceto("write", id.toString()); :};
 
-s_read ::= READ OPEN_BRACKET read_param CLOSE_BRACKET {: System.out.println("Read statement"); :};
-read_param ::= IDENTIFIER {: System.out.println("Read parameter"); :};
+s_read ::= READ OPEN_BRACKET IDENTIFIER:id CLOSE_BRACKET {:
+            System.out.println("Read statement");
+            Terceto terceto = new Terceto("read", id.toString());
+:};
 
 all_equal ::= ALL_EQUAL OPEN_BRACKET comparable_list CLOSE_BRACKET {:System.out.println("All-equal function");:};
 comparable_list ::= comparable_list COMMA comparable;
@@ -261,4 +408,15 @@ comparable  ::= OPEN_SQUARE_BRACKET obj_list CLOSE_SQUARE_BRACKET;
 obj_list ::= obj_list COMMA expression;
 obj_list ::= expression {:System.out.println("Expression in All-equal");:};
 
-repeat_inline ::= REPEAT_INLINE INTEGER_CONSTANT OPEN_SQUARE_BRACKET block CLOSE_SQUARE_BRACKET {:System.out.println("Repeat-inline function");:};
+repeat_inline ::= REPEAT_INLINE INTEGER_CONSTANT:integer_const {:
+                /*SymbolEntry entry = new SymbolEntry("@auxRepInl", DataType.INTEGER_TYPE, "0");
+                SymbolTableManager.insertInTable(entry);
+                Terceto terceto = new Terceto("=", String.valueOf(auxRepInl), String.valueOf(integer_const));
+                TercetoManager.repeat_inlineIdx.setTerceto(terceto);*/
+                :}
+                  OPEN_SQUARE_BRACKET block CLOSE_SQUARE_BRACKET
+                  {: System.out.println("Repeat-inline function");
+                     /*Terceto terceto1 = new Terceto ("=", auxRepInl, auxRepInl-1);
+                     Terceto terceto2 = new Terceto("CMP", auxRepInl, 0);
+                    Terceto terceto3 = new Terceto("BGT", TercetoManager.repeat_inlineIdx.getTercetoNumber());*/
+                  :};
