@@ -4,10 +4,13 @@ import java_cup.runtime.*;
 import java.util.List;
 import java.util.ArrayList;
 import lyc.compiler.table.*;
+import lyc.compiler.model.*;
 import java.util.HashMap;
 import lyc.compiler.terceto.*;
 import lyc.compiler.utils.*;
 import java.util.Stack;
+import java.util.Queue;
+import java.util.LinkedList;
 
 class Parser;
 
@@ -20,6 +23,8 @@ action code {:
     Stack auxFactStack = new Stack<Integer>();
     Stack auxCondStack = new Stack<Integer>();
     Stack auxCondExprStack = new Stack<Integer>();
+    Stack auxFalsyAllEqualStack = new Stack<Integer>();
+    LinkedList allEqualQueue = new LinkedList<String>();
     TercetoManager tercetoManager;
 
     // Expressions
@@ -40,6 +45,8 @@ action code {:
     // Repeat_inline
     int auxRepInl = 0;
 
+    // All_equal
+    int listFound = -1;
 :}
 
 // Terminals
@@ -171,6 +178,8 @@ id_list ::= IDENTIFIER:id {:
 
 decition ::= decitionAux trueBody
             {:
+                System.out.println("If statement");
+
                 Terceto terAux;
                 if (currLogOp == 1)
                 {
@@ -182,7 +191,7 @@ decition ::= decitionAux trueBody
 
                 } else {
                     terAux = (Terceto) auxCondStack.pop();
-                    terAux.updateTerceto(2, String.valueOf(TercetoManager.getLastTerceto()));
+                    terAux.updateTerceto(2, String.valueOf(TercetoManager.getLastTerceto()+1));
                 }
 
                 currLogOp = -1;
@@ -217,6 +226,7 @@ decition ::= decitionAux trueBody
              {:
                 // Fin bloque F
                 System.out.println("If else statement");
+
                 Terceto terAux;
 
                 terAux = (Terceto) auxCondStack.pop();
@@ -241,6 +251,7 @@ condition ::= comparison {: System.out.println("Condition = Comparison"); condId
 condition ::= NOT_COND comparison
             {:
                 System.out.println("Not (!) condition");
+
                 Terceto auxComparator = (Terceto) auxCondStack.pop();
                 auxComparator.negateTerceto();
                 auxCondStack.push(auxComparator);
@@ -305,14 +316,15 @@ iterator ::= WHILE OPEN_BRACKET {: Terceto tercetoEt = new Terceto("ET_WHILE"); 
 
 assignment ::= IDENTIFIER:id ASSIG expression {:
             System.out.println("Assignment to integer or float constant");
+
             if(Utils.checkIdExpresionType(id, true)){
                 Terceto terceto = new Terceto("=", id, TercetoManager.expressionIdx.getTercetoNumber());
                 TercetoManager.assignmentIdx.setTerceto(terceto);
             }
-
         :};
 assignment ::= IDENTIFIER:id ASSIG STRING_CONSTANT:str {:
             System.out.println("Assignment to string constant");
+
             Terceto terceto = new Terceto("=", id.toString(), str.toString());
             TercetoManager.assignmentIdx.setTerceto(terceto);
         :};
@@ -324,23 +336,24 @@ expression ::= expression {: auxExprStack.push(TercetoManager.expressionIdx.getT
 
             Terceto terceto = new Terceto("+", exprIdx, termIdx);
             TercetoManager.expressionIdx.setTerceto(terceto);
-
         :};
+
 expression ::= expression {: auxExprStack.push(TercetoManager.expressionIdx.getTercetoNumber()); :} SUB term {:
             System.out.println("-");
 
             exprIdx = (int) auxExprStack.pop();
             termIdx = TercetoManager.termIdx.getTercetoNumber();
 
-            Terceto terceto = new Terceto("-", termIdx, factIdx);
+            Terceto terceto = new Terceto("-", exprIdx, termIdx);
             TercetoManager.expressionIdx.setTerceto(terceto);
         :};
+
 expression ::= term {:
             System.out.println("Expression = Term");
             TercetoManager.expressionIdx.setTerceto(TercetoManager.termIdx.getTerceto());
         :};
-term ::= term {:auxTermStack.push(TercetoManager.termIdx.getTerceto().getNumber());:} MULT factor {:
 
+term ::= term {: auxTermStack.push(TercetoManager.termIdx.getTerceto().getNumber()); :} MULT factor {:
             System.out.println("*");
 
             termIdx = (int) auxTermStack.pop();
@@ -349,74 +362,119 @@ term ::= term {:auxTermStack.push(TercetoManager.termIdx.getTerceto().getNumber(
             Terceto terceto = new Terceto("*", termIdx, factIdx);
             TercetoManager.termIdx.setTerceto(terceto);
         :};
-term ::= term {:auxTermStack.push(TercetoManager.termIdx.getTerceto().getNumber());:} DIV factor {:
+
+term ::= term {: auxTermStack.push(TercetoManager.termIdx.getTerceto().getNumber()); :} DIV factor {:
             System.out.println("/");
 
             termIdx = (int) auxTermStack.pop();
             factIdx = TercetoManager.factorIdx.getTercetoNumber();
 
+            String factor = TercetoManager.factorIdx.getTerceto().getFirst();
+            if(factor.equals(String.valueOf(0))) {
+                throw new InvalidDividendException("Can't divide by 0");
+            }
+
             Terceto terceto = new Terceto("/", termIdx, factIdx);
             TercetoManager.termIdx.setTerceto(terceto);
-        :};
+            :};
+
 term ::= factor {:
             System.out.println("Term = factor");
 
             TercetoManager.termIdx.setTerceto(TercetoManager.factorIdx.getTerceto());
-        :};
-factor ::= IDENTIFIER:id  {:
+            :};
+
+factor ::= IDENTIFIER:id {:
             System.out.println("Id: " + id);
 
             if(Utils.checkIdExpresionType(id, false)){
                 Terceto terceto = new Terceto(id.toString());
                 TercetoManager.factorIdx.setTerceto(terceto);
             }
-        :};
+            :};
 
 factor ::= INTEGER_CONSTANT:constant {:
             System.out.println("Integer constant: " + constant );
 
             Terceto terceto = new Terceto(constant.toString());
             TercetoManager.factorIdx.setTerceto(terceto);
-        :};
+            :};
+
 factor ::= FLOAT_CONSTANT:constant {:
             System.out.println("Float constant: " + constant);
 
             Terceto terceto = new Terceto(constant.toString());
             TercetoManager.factorIdx.setTerceto(terceto);
-        :};
+            :};
+
 factor ::= OPEN_BRACKET expression CLOSE_BRACKET {:
             System.out.println("Factor = (Expression)");
+
             TercetoManager.factorIdx.setTerceto(TercetoManager.expressionIdx.getTerceto());
-        :};
+            :};
 
 s_write ::= WRITE OPEN_BRACKET STRING_CONSTANT:string_constant CLOSE_BRACKET {:
             System.out.println("Write statement");
+
             Terceto terceto = new Terceto("write", string_constant.toString()); :}
             | WRITE OPEN_BRACKET IDENTIFIER:id CLOSE_BRACKET {:
             System.out.println("Write statement");
-            Terceto terceto = new Terceto("write", id.toString()); :};
+
+            Terceto terceto = new Terceto("write", id.toString());
+            :};
 
 s_read ::= READ OPEN_BRACKET IDENTIFIER:id CLOSE_BRACKET {:
             System.out.println("Read statement");
-            Terceto terceto = new Terceto("read", id.toString());
-:};
 
-all_equal ::= ALL_EQUAL OPEN_BRACKET comparable_list CLOSE_BRACKET {:System.out.println("All-equal function");:};
+            Terceto terceto = new Terceto("read", id.toString());
+            :};
+
+all_equal ::= ALL_EQUAL OPEN_BRACKET comparable_list CLOSE_BRACKET {:
+                System.out.println("All-equal function");
+                Terceto tFalse = new Terceto("write", "Falso");
+                Terceto terAux;
+                while(!auxFalsyAllEqualStack.isEmpty()) {
+                    terAux = (Terceto) auxFalsyAllEqualStack.pop();
+                    terAux.updateTerceto(2, String.valueOf(TercetoManager.getLastTerceto()));
+                }
+                Terceto tTrue = new Terceto("write", "Verdadero");
+                :};
 comparable_list ::= comparable_list COMMA comparable;
 comparable_list ::= comparable COMMA comparable;
-comparable  ::= OPEN_SQUARE_BRACKET obj_list CLOSE_SQUARE_BRACKET;
-obj_list ::= obj_list COMMA expression;
-obj_list ::= expression {:System.out.println("Expression in All-equal");:};
+comparable  ::= OPEN_SQUARE_BRACKET obj_list CLOSE_SQUARE_BRACKET {: listFound = 1; System.out.println("List in all-equal"); :};
+obj_list ::= obj_list COMMA expression {:
+            if (listFound == -1) {
+                allEqualQueue.add(TercetoManager.expressionIdx.getTercetoNumber());
+            } else {
+                int expression = (int) allEqualQueue.removeFirst();
+                Terceto tCmp = new Terceto("CMP", expression, TercetoManager.expressionIdx.getTercetoNumber());
+                Terceto tJump = new Terceto("BNE", "false");
+                auxFalsyAllEqualStack.push(tJump);
+                allEqualQueue.addLast(TercetoManager.expressionIdx.getTercetoNumber());
+            }
+            :};
+obj_list ::= expression {:
+            System.out.println("Expression in All-equal");
+            if (listFound == -1) {
+                allEqualQueue.add(TercetoManager.expressionIdx.getTercetoNumber());
+            } else {
+                int expression = (int) allEqualQueue.removeFirst();
+                Terceto tCmp = new Terceto("CMP", expression, TercetoManager.expressionIdx.getTercetoNumber());
+                Terceto tJump = new Terceto("BNE");
+                auxFalsyAllEqualStack.push(tJump);
+                allEqualQueue.addLast(TercetoManager.expressionIdx.getTercetoNumber());
+            }
+            :};
 
 repeat_inline ::= REPEAT_INLINE INTEGER_CONSTANT:integer_const {:
-                /*SymbolEntry entry = new SymbolEntry("@auxRepInl", DataType.INTEGER_TYPE, "0");
-                SymbolTableManager.insertInTable(entry);
-                Terceto terceto = new Terceto("=", String.valueOf(auxRepInl), String.valueOf(integer_const));
-                TercetoManager.repeat_inlineIdx.setTerceto(terceto);*/
-                :}
-                  OPEN_SQUARE_BRACKET block CLOSE_SQUARE_BRACKET
-                  {: System.out.println("Repeat-inline function");
-                     /*Terceto terceto1 = new Terceto ("=", auxRepInl, auxRepInl-1);
-                     Terceto terceto2 = new Terceto("CMP", auxRepInl, 0);
-                    Terceto terceto3 = new Terceto("BGT", TercetoManager.repeat_inlineIdx.getTercetoNumber());*/
-                  :};
+            SymbolEntry entry = new SymbolEntry("@auxRepInl", DataType.INTEGER_TYPE, "0");
+            SymbolTableManager.insertInTable(entry);
+            Terceto terceto = new Terceto("=", "@auxRepInl", String.valueOf(integer_const));
+            TercetoManager.repeat_inlineIdx.setTerceto(terceto);
+            :}
+            OPEN_SQUARE_BRACKET block CLOSE_SQUARE_BRACKET {:
+            System.out.println("Repeat-inline function");
+            Terceto tMinus = new Terceto ("-", "@auxRepInl", "1");
+            Terceto tCmp = new Terceto("CMP", "@auxRepInl", "0");
+            Terceto tBgt = new Terceto("BGT", TercetoManager.repeat_inlineIdx.getTercetoNumber()+1);
+            :};

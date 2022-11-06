@@ -1,8 +1,8 @@
 /* Declaracion de variables */
 init {
-    nota_1, nota_2, id, a, b, c, d: Int
+    nota_1, nota_2, id, a, b, c, d, e, f: Int
     prom, numero1, numero2 : Float
     nombre, pedro: String
 }
 
-REPEAT 5 [write("boca campeon")]
+AllEqual( [(a+b)/3, b*c], [c+1+2+3, d/1])
