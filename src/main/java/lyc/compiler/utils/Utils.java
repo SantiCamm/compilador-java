@@ -9,16 +9,20 @@ import lyc.compiler.table.SymbolTableManager;
 import java.util.Stack;
 
 public class Utils {
-    Stack auxExprStack = new Stack<Integer>();
-    int a = (int) auxExprStack.pop();
-    public static boolean checkIdExpresionType(String id, boolean isAssignation) throws CompilerException {
+
+    public static boolean checkIdExpresionType(String id, boolean isAssignation, boolean isString) throws CompilerException {
         SymbolEntry symbol = SymbolTableManager.symbolTable.get(id);
 
-        if(symbol.getDataType() == DataType.FLOAT_TYPE || symbol.getDataType() == DataType.INTEGER_TYPE)
-            return true;
+        if(!isString) {
+            if (symbol.getDataType() == DataType.FLOAT_TYPE || symbol.getDataType() == DataType.INTEGER_TYPE)
+                return true;
+        } else {
+            if (symbol.getDataType() == DataType.STRING_TYPE)
+                return true;
+        }
 
         if(isAssignation)
-            throw new InvalidExpressionValuesException("Invalid assignation of an expression to String variable");
+            throw new InvalidExpressionValuesException("Invalid assignation of an expression to variable");
         else
             throw new InvalidExpressionValuesException("Invalid expression value types for id: '" + id + "' type is not compatible for an expression ");
 
