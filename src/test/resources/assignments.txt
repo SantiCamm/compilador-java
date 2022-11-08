@@ -3,3 +3,5 @@ a = .99
 
 b = "@sdADaSjfla%dfg"
 b = "asldkfhsjf"
+
+c = 22 + 5 + 1999

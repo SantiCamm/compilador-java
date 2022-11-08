@@ -1,7 +1,7 @@
 /* Declaracion de variables */
 init {
-    nota_1, nota_2, id : Int
-    prom,numero1,numero2 : Float
+    nota_1, nota_2, a, b, c, d, e, f, g, h, i, w: Int
+    prom, numero1, numero2 : Float
     nombre, pedro: String
 }
 
@@ -16,12 +16,24 @@ init {
 /* Comentarios
 multilinea */
 
-/* Asignaciones */
+/* Asignaciones validas*/
 nombre = "Armando Esteban Quito"
-id = 3
-pedro = "nombre"
+pedro = "asdf"
 numero1 = 2.4
 numero2 = .42
+nota_1 = 8
+nota_2 = 4
+pedro = "santi"
+
+/* Asignaciones invalidas */
+/*
+nombre = 1.2
+pedro = 2
+numero1 = "asd"
+numero2 = "asd"
+nota_1 = "asd"
+nota_2 = "asd"
+*/
 
 /* Rango invalido de flotante */
 // float = 22222222.34444444444
@@ -32,14 +44,15 @@ numero2 = .42
 /* Se pasa del largo maximo de id */
 // out_of_range_declared_id = "pedro"
 
-nota_1 = 8
-nota_2 = 4
+// Division por 0
+// nota_1 = 8 / 0
 
 /* Se pasa del rango de enteros de 8 bits */
 // nota_1 = 8000000000000000000 */
 
 write("Estado del alumno: ")
 write(nombre)
+read(nombre)
 
 /* Parametro invalido */
 // write(3)
@@ -50,13 +63,13 @@ write(nombre)
 /* Decisiones */
 if (nota_1 >= 7 && nota_2 >= 7) {
     write("Promocionado!")
-} else {
-    if((nota_1 < 7 && nota_2 >= 7) || (nota_1 >= 7 && nota_2 < 7)){
+}
+
+if((nota_1 < 7 && nota_2 >= 7)){
         write("Aprobado!")
     } else{
         write("Recursado :(")
     }
-}
 
 /* Condicion not */
 if(!(a < b))
@@ -65,21 +78,14 @@ if(!(a < b))
 }
 
 /* Iteracion */
-while (a > b)
-{
-    write("A mayor que b")
-    if(a > b) {
-        write("A mayor")
+while (a > b) {
+    write("PEDRO")
+    read(a)
+    if(f < g && w < h)
+    {
+        write("G es mayor y H es mayor")
     } else {
-        if (b > a)
-        {
-            write("B mayor")
-        } else {
-        while (b > c )
-        {
-            write("B mayor")
-        }
-        }
+        write("F es menor y W es menor")
     }
 }
 
@@ -92,7 +98,16 @@ if ((a>b) && (b>c) || (c>d)) {
 prom = (nota_1 + nota_2) / 2
 
 AllEqual( [a+w,b,c], [(d-3)*2,e,f], [g,h,i] )
-REPEAT 5 [write("pedro")]
+REPEAT 5 [while (a > b) {
+              write("PEDRO")
+              read(a)
+              if(f < g && w < h)
+              {
+                  write("G es mayor y H es mayor")
+              } else {
+                  write("F es menor y W es menor")
+              }
+          }]
 
 /* Sintaxis invalida */
 // REPEAT a [read("hola")]
