@@ -20,9 +20,9 @@ multilinea */
 nombre = "Armando Esteban Quito"
 pedro = "asdf"
 numero1 = 2.4 + 2
-numero2 = .42
-nota_1 = 8
-nota_2 = 4
+numero2 = .42 * 3
+nota_1 = 8 / 24
+nota_2 = 4 - 1
 pedro = "santi"
 
 /* Asignaciones invalidas */

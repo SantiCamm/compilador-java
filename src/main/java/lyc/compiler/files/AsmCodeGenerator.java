@@ -84,6 +84,15 @@ public class AsmCodeGenerator implements FileGenerator {
                 case "+":
                     writeExpression(fileWriter, terceto, "+");
                     break;
+                case "*":
+                    writeExpression(fileWriter, terceto, "*");
+                    break;
+                case "/":
+                    writeExpression(fileWriter, terceto, "/");
+                    break;
+                case "-":
+                    writeExpression(fileWriter, terceto, "-");
+                    break;
             }
         }
     }
