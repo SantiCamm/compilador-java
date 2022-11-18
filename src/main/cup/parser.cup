@@ -27,6 +27,9 @@ action code {:
     LinkedList allEqualQueue = new LinkedList<String>();
     TercetoManager tercetoManager;
 
+    List<String> auxConditionVars = new ArrayList<>();
+    int auxConditionVarCounter = 1;
+
     // Expressions
     int exprIdx;
     int termIdx;
@@ -251,12 +254,29 @@ condition ::= NOT_COND comparison {:
             auxCondStack.push(auxComparator);
 
             :};
-comparison ::= expression {: auxCondExprStack.push(TercetoManager.expressionIdx.getTercetoNumber()); :} comparator expression {:
+comparison ::= expression {:
+                String auxVarName = "@auxCond" + auxConditionVarCounter;
+                auxConditionVars.add(auxVarName);
+                Terceto terceto = new Terceto("=",auxVarName,TercetoManager.expressionIdx.getTercetoNumber());
+                auxCondExprStack.push(terceto.getNumber());
+                auxConditionVarCounter++;
+
+                SymbolTableManager.insertInTable(new SymbolEntry(auxVarName, DataType.FLOAT_TYPE));
+:} comparator expression {:
             System.out.println("Comparison");
+
+            String auxVarName = "@auxCond" + auxConditionVarCounter;
+            auxConditionVars.add(auxVarName);
+            Terceto tercetoAux = new Terceto("=",auxVarName,TercetoManager.expressionIdx.getTercetoNumber());
+            auxCondExprStack.push(tercetoAux.getNumber());
+            auxConditionVarCounter++;
+
+            SymbolTableManager.insertInTable(new SymbolEntry(auxVarName, DataType.FLOAT_TYPE));
+
 
             // creo comparacion (CMP, [], [])
             condExpr = (int) auxCondExprStack.pop();
-            Terceto terceto = new Terceto("CMP", condExpr, TercetoManager.expressionIdx.getTercetoNumber());
+            Terceto terceto = new Terceto("CMP", auxConditionVars.get(auxConditionVarCounter - 3),auxConditionVars.get(auxConditionVarCounter - 2));
             TercetoManager.comparisonIdx.setTerceto(terceto);
 
             // Si la condicion es un OR (estoy en la segunda comparacion, desapilo y actualizo el terceto de la primer condicion)

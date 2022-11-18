@@ -13,7 +13,7 @@ public class SymbolTableManager {
     }
 
     public static void insertInTable(SymbolEntry entry){
-            symbolTable.put(entry.getName(), entry);
+            symbolTable.put(entry.getName().replace(" ", "_"), entry);
     }
 
     public static void setDataTypeInTable(String key, DataType dataType){
