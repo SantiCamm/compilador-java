@@ -181,7 +181,6 @@ id_list ::= IDENTIFIER:id {:
 
 decition ::= decitionAux trueBody {:
             System.out.println("If statement");
-
             Terceto terAux;
             if (currLogOp == 1)
             {
@@ -196,11 +195,13 @@ decition ::= decitionAux trueBody {:
             }
                 currLogOp = -1;
                 complexCond = -1;
+                Terceto endif = new Terceto("endif");
 
             :};
 
 decition ::= decitionAux trueBody {:
             // Fin bloque V
+
             Terceto terAux;
 
             if (currLogOp == 1) {
@@ -228,6 +229,7 @@ decition ::= decitionAux trueBody {:
             Terceto terAux;
             terAux = (Terceto) auxCondStack.pop();
             terAux.updateTerceto(2, String.valueOf(TercetoManager.getLastTerceto()+1));
+            Terceto endif = new Terceto("endif");
 
             :};
 
@@ -239,12 +241,17 @@ decitionAux ::= IF OPEN_BRACKET condition CLOSE_BRACKET {:
                 auxCondStack.push(terOr);
                 auxCondStack.push(terAux);
                 }
+                Terceto then = new Terceto("THEN");
 
             :};
 trueBody ::= OPEN_CURLY_BRACKET block CLOSE_CURLY_BRACKET;
 falseBody ::= ELSE OPEN_CURLY_BRACKET block CLOSE_CURLY_BRACKET;
 condition ::= comparison {:System.out.println("Comparison");:} AND_COND {: currLogOp=1; complexCond=1; :} comparison {: System.out.println("And (&&) condition"); condIdx = TercetoManager.comparatorIdx.getTercetoNumber(); :};
-condition ::= comparison {:System.out.println("Comparison");:} OR_COND {: currLogOp=0; complexCond=1; :} comparison {: System.out.println("Or (||) condition"); condIdx = TercetoManager.comparatorIdx.getTercetoNumber(); :};
+condition ::= comparison {:System.out.println("Comparison");:} OR_COND {:
+                                                                            currLogOp=0;
+                                                                            complexCond=1;
+                                                                            Terceto tercetoThen = new Terceto("OR");
+                                                                             :} comparison {: System.out.println("Or (||) condition"); condIdx = TercetoManager.comparatorIdx.getTercetoNumber(); :};
 condition ::= comparison {: System.out.println("Condition = Comparison"); condIdx = TercetoManager.comparatorIdx.getTercetoNumber(); :};
 condition ::= NOT_COND comparison {:
             System.out.println("Not (!) condition");
