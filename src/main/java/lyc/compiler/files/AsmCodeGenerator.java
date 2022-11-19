@@ -108,8 +108,23 @@ public class AsmCodeGenerator implements FileGenerator {
                 case "endif":
                     writeLabel(fileWriter);
                     break;
+                case "write":
+                    writePrint(fileWriter, terceto);
+                    break;
             }
         }
+    }
+
+    private void writePrint(FileWriter fileWriter, Terceto terceto) throws IOException {
+
+        String value = constansByValue.get(terceto.getSecond().replace("\"", ""));
+        if(value == null)
+            value = terceto.getSecond();
+
+        fileWriter.write("MOV dx," + value + "\n");
+        fileWriter.write("MOV ah,9\n");
+        fileWriter.write("int 0x21\n\n");
+
     }
 
 
