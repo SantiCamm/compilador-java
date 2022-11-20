@@ -30,6 +30,13 @@ action code {:
     List<String> auxConditionVars = new ArrayList<>();
     int auxConditionVarCounter = 1;
 
+
+    ArrayList <ArrayList<String>> allEqualListsValues = new ArrayList<ArrayList<String>>();
+    int listCounter = 0;
+    Stack jumpsForNotEqual = new Stack<Integer>();
+
+    int exprCmpVarCounter = 1;
+
     // Expressions
     int exprIdx;
     int termIdx;
@@ -330,6 +337,7 @@ iterator ::= WHILE OPEN_BRACKET {: Terceto tercetoEt = new Terceto("ET_WHILE"); 
             complexCond = -1;
 
             Terceto tercetoBi = new Terceto("BI", TercetoManager.iteratorIdx.getTercetoNumber());
+            Terceto endif = new Terceto("endif");
 
             :};
 
@@ -463,50 +471,138 @@ s_read ::= READ OPEN_BRACKET IDENTIFIER:id CLOSE_BRACKET {:
 
             :};
 
-all_equal ::= ALL_EQUAL OPEN_BRACKET comparable_list CLOSE_BRACKET {:
-            System.out.println("All-equal function");
-            Terceto tTrue= new Terceto("=", "@auxAllEqual", "1");
-            Terceto terAux;
-            while(!auxFalsyAllEqualStack.isEmpty()) {
-                terAux = (Terceto) auxFalsyAllEqualStack.pop();
-                terAux.updateTerceto(2, String.valueOf(TercetoManager.getLastTerceto()+1));
-            }
+//all_equal ::= ALL_EQUAL OPEN_BRACKET comparable_list CLOSE_BRACKET {:
+//            System.out.println("All-equal function");
+//            Terceto tTrue= new Terceto("=", "@auxAllEqual", "1");
+//            Terceto terAux;
+//            while(!auxFalsyAllEqualStack.isEmpty()) {
+//                terAux = (Terceto) auxFalsyAllEqualStack.pop();
+//                terAux.updateTerceto(2, String.valueOf(TercetoManager.getLastTerceto()+1));
+//            }
+//
+//            Terceto tFalse = new Terceto("=", "@auxAllEqual", "0");
+//
+//            :};
+//comparable_list ::= comparable_list COMMA comparable;
+//comparable_list ::= comparable COMMA comparable;
+//comparable  ::= OPEN_SQUARE_BRACKET obj_list CLOSE_SQUARE_BRACKET {: listFound = 1; System.out.println("List in all-equal"); :};
+//obj_list ::= obj_list COMMA expression {:
+//            if (listFound == -1) {
+//                allEqualQueue.add(TercetoManager.expressionIdx.getTercetoNumber());
+//            } else {
+//                int expression = (int) allEqualQueue.removeFirst();
+//
+//                String exprCmp1 = "@obj" + exprCmpVarCounter;
+//                String exprCmp2 = "@obj" + (exprCmpVarCounter + 1);
+//
+//                exprCmpVarCounter++;
+//
+//                SymbolEntry entry1 = new SymbolEntry(exprCmp1, DataType.FLOAT_TYPE);
+//                SymbolTableManager.insertInTable(entry1);
+//
+//                SymbolEntry entry2 = new SymbolEntry(exprCmp2, DataType.FLOAT_TYPE);
+//                SymbolTableManager.insertInTable(entry2);
+//
+//                Terceto comp1 = new Terceto("=", exprCmp1, expression);
+//                Terceto comp2 = new Terceto("=", exprCmp2, TercetoManager.expressionIdx.getTercetoNumber());
+//
+//                Terceto tCmp = new Terceto("CMP", exprCmp1, exprCmp2);
+//                Terceto tJump = new Terceto("BNE");
+//                auxFalsyAllEqualStack.push(tJump);
+//                allEqualQueue.addLast(TercetoManager.expressionIdx.getTercetoNumber());
+//            }
+//
+//            :};
+//obj_list ::= expression {:
+//            System.out.println("Expression in All-equal");
+//
+//            SymbolEntry entry = new SymbolEntry("@auxAllEqual", DataType.INTEGER_TYPE, "0");
+//            SymbolTableManager.insertInTable(entry);
+//
+//            if (listFound == -1) {
+//                allEqualQueue.add(TercetoManager.expressionIdx.getTercetoNumber());
+//            } else {
+//                int expression = (int) allEqualQueue.removeFirst();
+//
+//                String exprCmp1 = "@obj" + exprCmpVarCounter;
+//                String exprCmp2 = "@obj" + (exprCmpVarCounter + 1);
+//
+//                exprCmpVarCounter++;
+//
+//                SymbolEntry entry1 = new SymbolEntry(exprCmp1, DataType.FLOAT_TYPE);
+//                SymbolTableManager.insertInTable(entry1);
+//
+//                SymbolEntry entry2 = new SymbolEntry(exprCmp2, DataType.FLOAT_TYPE);
+//                SymbolTableManager.insertInTable(entry2);
+//
+//                Terceto comp1 = new Terceto("=", exprCmp1, expression);
+//                Terceto comp2 = new Terceto("=", exprCmp2, TercetoManager.expressionIdx.getTercetoNumber());
+//
+//                Terceto tCmp = new Terceto("CMP", exprCmp1, exprCmp2);
+//                Terceto tJump = new Terceto("BNE");
+//                auxFalsyAllEqualStack.push(tJump);
+//                allEqualQueue.addLast(TercetoManager.expressionIdx.getTercetoNumber());
+//            }
+//
+//            :};
 
-            Terceto tFalse = new Terceto("=", "@auxAllEqual", "0");
+all_equal ::= ALL_EQUAL OPEN_BRACKET comparable_list {:
+         int expressionsListSize = allEqualListsValues.get(0).size();
+         int numOfLists =  allEqualListsValues.size();
 
-            :};
+         Terceto allEqualResult = new Terceto("=", "@allEqualRes", "0");
+         SymbolEntry entry = new SymbolEntry("@allEqualRes", DataType.FLOAT_TYPE);
+         SymbolTableManager.insertInTable(entry);
+
+         SymbolEntry entry2 = new SymbolEntry("_0", DataType.FLOAT_CONS, "0");
+         SymbolTableManager.insertInTable(entry2);
+
+
+         for(int i = 0; i < expressionsListSize; i++) {
+             for(int k = 0; k < numOfLists - 1; k++) {
+               Terceto comp = new Terceto("CMP", allEqualListsValues.get(k).get(i),allEqualListsValues.get(k+1).get(i));
+               Terceto jump = new Terceto("BNE");
+               jumpsForNotEqual.push(jump.getNumber()-1);
+             }
+         }
+
+         allEqualResult = new Terceto("=", "@allEqualRes", "1");
+         SymbolEntry entry3 = new SymbolEntry("_1", DataType.FLOAT_CONS, "1");
+         SymbolTableManager.insertInTable(entry3);
+
+         while(!jumpsForNotEqual.empty()){
+            int pos = (int) jumpsForNotEqual.pop();
+            Terceto terAux = TercetoManager.tercetoList.get(pos);
+            terAux.updateTerceto(2, String.valueOf(allEqualResult.getNumber()+1));
+         }
+         Terceto endif = new Terceto("endif");
+
+     :} CLOSE_BRACKET;
 comparable_list ::= comparable_list COMMA comparable;
 comparable_list ::= comparable COMMA comparable;
-comparable  ::= OPEN_SQUARE_BRACKET obj_list CLOSE_SQUARE_BRACKET {: listFound = 1; System.out.println("List in all-equal"); :};
+comparable  ::= OPEN_SQUARE_BRACKET obj_list CLOSE_SQUARE_BRACKET {: listCounter++; :};
 obj_list ::= obj_list COMMA expression {:
-            if (listFound == -1) {
-                allEqualQueue.add(TercetoManager.expressionIdx.getTercetoNumber());
-            } else {
-                int expression = (int) allEqualQueue.removeFirst();
-                Terceto tCmp = new Terceto("CMP", expression, TercetoManager.expressionIdx.getTercetoNumber());
-                Terceto tJump = new Terceto("BNE");
-                auxFalsyAllEqualStack.push(tJump);
-                allEqualQueue.addLast(TercetoManager.expressionIdx.getTercetoNumber());
-            }
+        int expression = TercetoManager.expressionIdx.getTercetoNumber();
+        String exprCmp = "@obj" + exprCmpVarCounter;
+        SymbolEntry entry = new SymbolEntry(exprCmp, DataType.FLOAT_TYPE);
+        SymbolTableManager.insertInTable(entry);
+        Terceto expr = new Terceto("=", exprCmp, expression);
+        ArrayList<String> list = allEqualListsValues.get(listCounter);
+        list.add(exprCmp);
+        exprCmpVarCounter++;
 
-            :};
+     :};
 obj_list ::= expression {:
-            System.out.println("Expression in All-equal");
-
-            SymbolEntry entry = new SymbolEntry("@auxAllEqual", DataType.INTEGER_TYPE, "0");
-            SymbolTableManager.insertInTable(entry);
-
-            if (listFound == -1) {
-                allEqualQueue.add(TercetoManager.expressionIdx.getTercetoNumber());
-            } else {
-                int expression = (int) allEqualQueue.removeFirst();
-                Terceto tCmp = new Terceto("CMP", expression, TercetoManager.expressionIdx.getTercetoNumber());
-                Terceto tJump = new Terceto("BNE");
-                auxFalsyAllEqualStack.push(tJump);
-                allEqualQueue.addLast(TercetoManager.expressionIdx.getTercetoNumber());
-            }
-
-            :};
+    int expression = TercetoManager.expressionIdx.getTercetoNumber();
+    String exprCmp = "@obj" + exprCmpVarCounter;
+    SymbolEntry entry = new SymbolEntry(exprCmp, DataType.FLOAT_TYPE);
+    SymbolTableManager.insertInTable(entry);
+    Terceto expr = new Terceto("=", exprCmp, expression);
+    ArrayList<String> list = new ArrayList<>();
+    list.add(exprCmp);
+    allEqualListsValues.add(list);
+    exprCmpVarCounter++;
+    :};
 
 repeat_inline ::= REPEAT_INLINE INTEGER_CONSTANT:integer_const {:
             SymbolEntry entry = new SymbolEntry("@auxRepInl", DataType.INTEGER_TYPE, "0");

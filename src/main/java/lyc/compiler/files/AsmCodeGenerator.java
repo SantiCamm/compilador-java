@@ -54,7 +54,7 @@ public class AsmCodeGenerator implements FileGenerator {
 
             if(entry.getDataType() == DataType.STRING_CONS){
                 asmType = "db";
-                varValue = "\"" + entry.getValue() + "\", 0";
+                varValue = "\"" + entry.getValue() + "\", '$', 4 dup (?)";
                 constansByValue.put(entry.getValue(), key);
             }
             else if(entry.getDataType() == DataType.INTEGER_CONS || entry.getDataType() == DataType.FLOAT_CONS){
@@ -121,9 +121,13 @@ public class AsmCodeGenerator implements FileGenerator {
         if(value == null)
             value = terceto.getSecond();
 
-        fileWriter.write("MOV dx," + value + "\n");
+        fileWriter.write("MOV ax,@DATA\n");
+        fileWriter.write("MOV ds,ax\n");
+        fileWriter.write("MOV es,ax\n");
+        fileWriter.write("MOV dx,OFFSET " + value + "\n");
         fileWriter.write("MOV ah,9\n");
-        fileWriter.write("int 0x21\n\n");
+        fileWriter.write("int 21h\n");
+        fileWriter.write("new\n\n");
 
     }
 
@@ -175,9 +179,11 @@ public class AsmCodeGenerator implements FileGenerator {
 
         String aux2 = constansByValue.get(TercetoManager.tercetoList.get(pos2).getFirst());
         if(aux2 == null)
-            aux2 = TercetoManager.tercetoList.get(pos1).getFirst();
+            aux2 = TercetoManager.tercetoList.get(pos2).getFirst();
 
-        fileWriter.write("FLD " + aux1 + "\n");
+
+        if(aux1 != "+" && aux1 != "-" && aux1 != "*" && aux1 != "/")
+            fileWriter.write("FLD " + aux1 + "\n");
         fileWriter.write(asmOperator + " " + aux2 + "\n");
     }
 
