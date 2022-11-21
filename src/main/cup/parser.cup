@@ -614,7 +614,7 @@ repeat_inline ::= REPEAT_INLINE INTEGER_CONSTANT:integer_const {:
             SymbolTableManager.insertInTable(entry);
             Terceto terceto = new Terceto("=", "@auxRepInl", String.valueOf(integer_const));
             TercetoManager.repeat_inlineIdx.setTerceto(terceto);
-
+            Terceto repeat = new Terceto("repeat");
             :}
             OPEN_SQUARE_BRACKET block CLOSE_SQUARE_BRACKET {:
             System.out.println("Repeat-inline function");

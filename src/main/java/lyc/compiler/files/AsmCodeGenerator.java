@@ -24,6 +24,9 @@ public class AsmCodeGenerator implements FileGenerator {
     private Stack<String> whileLabels = new Stack<>();
     private int whileLabelsCont = 1;
 
+    private Stack<String> repeatLabels = new Stack<>();
+    private int repeatLabelsCont = 1;
+
     private HashMap<String, String> jumpLabels = new HashMap<String, String>();
 
     @Override
@@ -116,8 +119,11 @@ public class AsmCodeGenerator implements FileGenerator {
                 case "endif":
                     writeLabel(fileWriter);
                     break;
-                case "endrepeat":
+                case "endwhile":
                     writeLabel(fileWriter);
+                    break;
+                case "repeat":
+                    writeRepeatLabel(fileWriter);
                     break;
                 case "write":
                     writePrint(fileWriter, terceto);
@@ -130,6 +136,14 @@ public class AsmCodeGenerator implements FileGenerator {
                     break;
             }
         }
+    }
+
+    private void writeRepeatLabel(FileWriter fileWriter) throws IOException {
+        String label = "repeat_" + repeatLabelsCont;
+        repeatLabels.push(label);
+        repeatLabelsCont++;
+
+        fileWriter.write(label + ":\n");
     }
 
     private void writeOrCondition(FileWriter fileWriter, Terceto terceto) throws IOException {
@@ -265,22 +279,33 @@ public class AsmCodeGenerator implements FileGenerator {
 
         Terceto nextToJump = null;
 
-        if(terceto.getNumber() + 1 < TercetoManager.tercetoList.size()) {
+        boolean isRepeat = false;
+
+        if (terceto.getNumber() + 2 <= TercetoManager.tercetoList.size()) {
             nextToJump = TercetoManager.tercetoList.get(terceto.getNumber() + 1);
-        }
 
-        if (nextToJump.getFirst() != "OR") {
-            String conditionLabel = jumpLabels.get(jumpTerceto.getSecond());
-            if(conditionLabel == null){
-                conditionLabel = "else_" + conditionLabelsCont;
-                jumpLabels.put(jumpTerceto.getSecond(),conditionLabel);
-                conditionLabelsCont++;
-                conditionLabels.push(conditionLabel);
+            if (nextToJump.getFirst() == "endrepeat") {
+                isRepeat = true;
+                String conditionLabel = repeatLabels.pop();
+                fileWriter.write("JA " + conditionLabel + "\n");
             }
-
-            fileWriter.write(jumpType + " " + conditionLabel + "\n");
         }
 
+        if (!isRepeat && terceto.getNumber() + 1 < TercetoManager.tercetoList.size()) {
+            nextToJump = TercetoManager.tercetoList.get(terceto.getNumber() + 1);
+
+            if (nextToJump.getFirst() != "OR") {
+                String conditionLabel = jumpLabels.get(jumpTerceto.getSecond());
+                if (conditionLabel == null) {
+                    conditionLabel = "else_" + conditionLabelsCont;
+                    jumpLabels.put(jumpTerceto.getSecond(), conditionLabel);
+                    conditionLabelsCont++;
+                    conditionLabels.push(conditionLabel);
+                }
+
+                fileWriter.write(jumpType + " " + conditionLabel + "\n");
+            }
+        }
     }
 
     private void writeInconditionalJump(FileWriter fileWriter, Terceto terceto) throws IOException {
