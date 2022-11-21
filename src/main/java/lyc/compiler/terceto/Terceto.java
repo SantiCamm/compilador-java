@@ -1,5 +1,7 @@
 package lyc.compiler.terceto;
 
+import java.util.Objects;
+
 public class Terceto {
 
     static int TERCETO_UNIQUE_ID = 0;
