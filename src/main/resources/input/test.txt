@@ -61,15 +61,9 @@ read(nombre)
 // read(3)
 
 /* Decisiones */
-if (nota_1 >= 7 && nota_2 >= 7) {
+if (nota_1 >= 7 || nota_2 >= 7) {
     write("Promocionado!")
 }
-
-if((nota_1 + 99 < 7 && nota_2 >= 7)){
-        write("Aprobado!")
-    } else{
-        write("Recursado :(")
-    }
 
 /* Condicion not */
 if(!(a < b))

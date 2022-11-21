@@ -107,6 +107,9 @@ public class AsmCodeGenerator implements FileGenerator {
                 case "THEN":
                     writeThenLabel(fileWriter);
                     break;
+                case "OR":
+                    writeOrCondition(fileWriter, terceto);
+                    break;
                 case "BI":
                     writeInconditionalJump(fileWriter, terceto);
                     break;
@@ -127,6 +130,16 @@ public class AsmCodeGenerator implements FileGenerator {
                     break;
             }
         }
+    }
+
+    private void writeOrCondition(FileWriter fileWriter, Terceto terceto) throws IOException {
+        String jumpType = getJump(TercetoManager.tercetoList.get(terceto.getNumber() - 2).getFirst());
+
+        String thenLabel = "then_" + thenLabelsCont;
+        thenLabels.push(thenLabel);
+        thenLabelsCont++;
+
+        fileWriter.write(jumpType + " " + thenLabel + "\n");
     }
 
     private void writeWhile(FileWriter fileWriter, Terceto terceto) throws IOException {
@@ -250,16 +263,13 @@ public class AsmCodeGenerator implements FileGenerator {
         Terceto jumpTerceto = TercetoManager.tercetoList.get(terceto.getNumber());
         String jumpType = getJump(jumpTerceto.getFirst());
 
-        if(terceto.getNumber() + 1 < TercetoManager.tercetoList.size()) {
-            Terceto nextToJump = TercetoManager.tercetoList.get(terceto.getNumber() + 1);
+        Terceto nextToJump = null;
 
-            if (nextToJump.getFirst() == "OR" || nextToJump.getFirst() == "THEN") {
-                String thenLabel = "then_" + thenLabelsCont;
-                thenLabels.push(thenLabel);
-                thenLabelsCont++;
-            }
+        if(terceto.getNumber() + 1 < TercetoManager.tercetoList.size()) {
+            nextToJump = TercetoManager.tercetoList.get(terceto.getNumber() + 1);
         }
 
+        if (nextToJump.getFirst() != "OR") {
             String conditionLabel = jumpLabels.get(jumpTerceto.getSecond());
             if(conditionLabel == null){
                 conditionLabel = "else_" + conditionLabelsCont;
@@ -268,8 +278,8 @@ public class AsmCodeGenerator implements FileGenerator {
                 conditionLabels.push(conditionLabel);
             }
 
-
             fileWriter.write(jumpType + " " + conditionLabel + "\n");
+        }
 
     }
 
@@ -298,7 +308,14 @@ public class AsmCodeGenerator implements FileGenerator {
     }
 
     private void writeThenLabel(FileWriter fileWriter) throws IOException {
-        String label = thenLabels.pop();
+        String label = null;
+
+        if(thenLabels.size() == 0){
+            label = "then_" + thenLabelsCont;
+            thenLabelsCont++;
+        }else
+            label = thenLabels.pop();
+
         fileWriter.write("\n"+ label + ":\n");
     }
     private String getJump(String comparator) {
