@@ -2,6 +2,7 @@ package lyc.compiler.files;
 
 import lyc.compiler.table.DataType;
 import lyc.compiler.table.SymbolEntry;
+import lyc.compiler.table.SymbolTableManager;
 import lyc.compiler.terceto.Terceto;
 import lyc.compiler.terceto.TercetoManager;
 
@@ -32,8 +33,7 @@ public class AsmCodeGenerator implements FileGenerator {
     }
 
     private void insertHeader(FileWriter fileWriter) throws IOException {
-//        fileWriter.write("include number.asm\n");
-        fileWriter.write(".model large\n");
+        fileWriter.write(".MODEL LARGE\n");
         fileWriter.write(".386\n");
         fileWriter.write(".STACK 200h\n\n");
         fileWriter.write(".DATA\n\n");
@@ -116,6 +116,9 @@ public class AsmCodeGenerator implements FileGenerator {
                 case "write":
                     writePrint(fileWriter, terceto);
                     break;
+                case "read":
+                    writeRead(fileWriter, terceto);
+                    break;
             }
         }
     }
@@ -126,13 +129,28 @@ public class AsmCodeGenerator implements FileGenerator {
         if(value == null)
             value = terceto.getSecond();
 
-        fileWriter.write("MOV ax,@DATA\n");
-        fileWriter.write("MOV ds,ax\n");
+        fileWriter.write("MOV AX,@DATA\n");
+        fileWriter.write("MOV DS,AX\n");
         fileWriter.write("MOV es,ax\n");
         fileWriter.write("MOV dx,OFFSET " + value + "\n");
         fileWriter.write("MOV ah,9\n");
         fileWriter.write("int 21h\n");
 
+    }
+
+    private void writeRead(FileWriter fileWriter, Terceto terceto) throws IOException {
+
+        String value = constansByValue.get(terceto.getSecond().replace("\"", ""));
+        if(value == null)
+            value = terceto.getSecond();
+
+        SymbolEntry symbol = SymbolTableManager.symbolTable.get(value);
+
+        if(symbol.getDataType() == DataType.STRING_TYPE){
+            fileWriter.write("getString " + value + "\n\n");
+        } else if(symbol.getDataType() == DataType.FLOAT_TYPE){
+            fileWriter.write("GetFloat " + value + "\n\n");
+        }
     }
 
 

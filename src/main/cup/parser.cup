@@ -620,6 +620,7 @@ repeat_inline ::= REPEAT_INLINE INTEGER_CONSTANT:integer_const {:
             System.out.println("Repeat-inline function");
             Terceto tOne = new Terceto ("1");
             Terceto tMinus = new Terceto ("-", "@auxRepInl", tOne.getNumber());
+            Terceto tEqual = new Terceto ("=", "@auxRepInl", tMinus.getNumber());
             Terceto tCmp = new Terceto("CMP", "@auxRepInl", "0");
             Terceto tBgt = new Terceto("BGT", TercetoManager.repeat_inlineIdx.getTercetoNumber()+1);
             Terceto end = new Terceto("endrepeat");
