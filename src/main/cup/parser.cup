@@ -441,7 +441,12 @@ factor ::= INTEGER_CONSTANT:constant {:
 factor ::= FLOAT_CONSTANT:constant {:
             System.out.println("Float constant: " + constant);
 
-            Terceto terceto = new Terceto(constant.toString());
+            String val = constant.toString();
+
+            if(val.startsWith("."))
+                val = "0" + val;
+
+            Terceto terceto = new Terceto(val);
             TercetoManager.factorIdx.setTerceto(terceto);
 
             :};
@@ -617,5 +622,6 @@ repeat_inline ::= REPEAT_INLINE INTEGER_CONSTANT:integer_const {:
             Terceto tMinus = new Terceto ("-", "@auxRepInl", tOne.getNumber());
             Terceto tCmp = new Terceto("CMP", "@auxRepInl", "0");
             Terceto tBgt = new Terceto("BGT", TercetoManager.repeat_inlineIdx.getTercetoNumber()+1);
+            Terceto end = new Terceto("endrepeat");
 
             :};

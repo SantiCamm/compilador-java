@@ -176,7 +176,10 @@ StringConstant = \"(([^\"\n]*)\")
                                                 }
 
                                                 if(!SymbolTableManager.existsInTable(yytext())){
-                                                      SymbolEntry entry = new SymbolEntry("_"+yytext(), DataType.FLOAT_CONS, yytext());
+                                                    String val = yytext();
+                                                    if(yytext().startsWith("."))
+                                                          val = "0" + yytext();
+                                                      SymbolEntry entry = new SymbolEntry("_"+val, DataType.FLOAT_CONS, val);
                                                       SymbolTableManager.insertInTable(entry);
                                                 }
                                                 

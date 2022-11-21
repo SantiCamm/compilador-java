@@ -32,10 +32,11 @@ public class AsmCodeGenerator implements FileGenerator {
     }
 
     private void insertHeader(FileWriter fileWriter) throws IOException {
-        fileWriter.write("include number.asm\n");
-        fileWriter.write(".MODEL LARGE\n");
+//        fileWriter.write("include number.asm\n");
+        fileWriter.write(".model large\n");
         fileWriter.write(".386\n");
         fileWriter.write(".STACK 200h\n\n");
+        fileWriter.write(".DATA\n\n");
     }
 
     private void insertFooter(FileWriter fileWriter) throws IOException{
@@ -54,11 +55,12 @@ public class AsmCodeGenerator implements FileGenerator {
 
             if(entry.getDataType() == DataType.STRING_CONS){
                 asmType = "db";
-                varValue = "\"" + entry.getValue() + "\", '$', 4 dup (?)";
+                varValue = "'" + entry.getValue() + "', 0";
                 constansByValue.put(entry.getValue(), key);
             }
             else if(entry.getDataType() == DataType.INTEGER_CONS || entry.getDataType() == DataType.FLOAT_CONS){
                 asmType = "dd";
+                key = key.replace(".","").replace("_", "_f");
                 varValue = Double.valueOf(entry.getValue()).toString();
                 constansByValue.put(entry.getValue(), key);
             }else{
@@ -72,7 +74,7 @@ public class AsmCodeGenerator implements FileGenerator {
         fileWriter.write("\n\n");
         fileWriter.write(".CODE\n");
         fileWriter.write("mov AX,@DATA\n");
-        fileWriter.write("mov .DS,AX\n");
+        fileWriter.write("mov DS,AX\n");
         fileWriter.write("mov es,ax\n");
         fileWriter.write("\n\n");
     }
@@ -108,6 +110,9 @@ public class AsmCodeGenerator implements FileGenerator {
                 case "endif":
                     writeLabel(fileWriter);
                     break;
+                case "endrepeat":
+                    writeLabel(fileWriter);
+                    break;
                 case "write":
                     writePrint(fileWriter, terceto);
                     break;
@@ -127,7 +132,6 @@ public class AsmCodeGenerator implements FileGenerator {
         fileWriter.write("MOV dx,OFFSET " + value + "\n");
         fileWriter.write("MOV ah,9\n");
         fileWriter.write("int 21h\n");
-        fileWriter.write("new\n\n");
 
     }
 
@@ -162,6 +166,7 @@ public class AsmCodeGenerator implements FileGenerator {
     private void writeExpression(FileWriter fileWriter, Terceto terceto, String operator) throws IOException {
 
         String asmOperator = "";
+        char openBracket = '[';
 
         switch (operator){
             case "+" -> asmOperator = "FADD";
@@ -170,21 +175,36 @@ public class AsmCodeGenerator implements FileGenerator {
             case "/" -> asmOperator = "FDIV";
         }
 
-        int pos1 = Integer.valueOf(terceto.getSecond().replace("[", "").replace("]", "")) - 1;
-        int pos2 = Integer.valueOf(terceto.getThird().replace("[", "").replace("]", "")) - 1;
+        String aux1 = null;
+        String aux2 = null;
 
-        String aux1 = constansByValue.get(TercetoManager.tercetoList.get(pos1).getFirst());
-        if(aux1 == null)
-            aux1 = TercetoManager.tercetoList.get(pos1).getFirst();
+        if(terceto.getSecond().charAt(0) == openBracket) {
+            int pos1 = Integer.valueOf(terceto.getSecond().replace("[", "").replace("]", "")) - 1;
 
-        String aux2 = constansByValue.get(TercetoManager.tercetoList.get(pos2).getFirst());
-        if(aux2 == null)
-            aux2 = TercetoManager.tercetoList.get(pos2).getFirst();
+            aux1 = constansByValue.get(TercetoManager.tercetoList.get(pos1).getFirst());
+            if(aux1 == null)
+                aux1 = TercetoManager.tercetoList.get(pos1).getFirst();
+        }else
+            aux1 = terceto.getSecond();
 
+
+        if(terceto.getThird().charAt(0) == openBracket) {
+            int pos2 = Integer.valueOf(terceto.getThird().replace("[", "").replace("]", "")) - 1;
+            aux2 = constansByValue.get(TercetoManager.tercetoList.get(pos2).getFirst());
+
+            if(aux2 == null)
+                aux2 = TercetoManager.tercetoList.get(pos2).getFirst();
+        }else
+            aux2 = terceto.getThird();
 
         if(aux1 != "+" && aux1 != "-" && aux1 != "*" && aux1 != "/")
             fileWriter.write("FLD " + aux1 + "\n");
-        fileWriter.write(asmOperator + " " + aux2 + "\n");
+
+        if(aux2 != "+" && aux2 != "-" && aux2 != "*" && aux2 != "/")
+            fileWriter.write(asmOperator + " " + aux2 + "\n");
+        else
+            fileWriter.write(asmOperator + "\n");
+
     }
 
     public void writeDecition(FileWriter fileWriter, Terceto terceto) throws IOException {
@@ -198,17 +218,17 @@ public class AsmCodeGenerator implements FileGenerator {
         Terceto jumpTerceto = TercetoManager.tercetoList.get(terceto.getNumber());
         String jumpType = getJump(jumpTerceto.getFirst());
 
-        Terceto nextToJump = TercetoManager.tercetoList.get(terceto.getNumber() + 1);
+        if(terceto.getNumber() + 1 < TercetoManager.tercetoList.size()) {
+            Terceto nextToJump = TercetoManager.tercetoList.get(terceto.getNumber() + 1);
 
-
-
-        if(nextToJump.getFirst() == "OR" || nextToJump.getFirst() == "THEN"){
-            String thenLabel = "then_" + thenLabelsCont;
-            thenLabels.push(thenLabel);
-            thenLabelsCont++;
+            if (nextToJump.getFirst() == "OR" || nextToJump.getFirst() == "THEN") {
+                String thenLabel = "then_" + thenLabelsCont;
+                thenLabels.push(thenLabel);
+                thenLabelsCont++;
+            }
         }
 
-        String  conditionLabel = jumpLabels.get(jumpTerceto.getSecond());
+            String conditionLabel = jumpLabels.get(jumpTerceto.getSecond());
             if(conditionLabel == null){
                 conditionLabel = "else_" + conditionLabelsCont;
                 jumpLabels.put(jumpTerceto.getSecond(),conditionLabel);
@@ -217,7 +237,7 @@ public class AsmCodeGenerator implements FileGenerator {
             }
 
 
-        fileWriter.write(jumpType + " " + conditionLabel + "\n");
+            fileWriter.write(jumpType + " " + conditionLabel + "\n");
 
     }
 
