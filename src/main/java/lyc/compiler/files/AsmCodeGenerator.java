@@ -21,6 +21,9 @@ public class AsmCodeGenerator implements FileGenerator {
     private Stack<String> thenLabels = new Stack<>();
     private int thenLabelsCont = 1;
 
+    private Stack<String> whileLabels = new Stack<>();
+    private int whileLabelsCont = 1;
+
     private HashMap<String, String> jumpLabels = new HashMap<String, String>();
 
     @Override
@@ -119,8 +122,19 @@ public class AsmCodeGenerator implements FileGenerator {
                 case "read":
                     writeRead(fileWriter, terceto);
                     break;
+                case "ET_WHILE":
+                    writeWhile(fileWriter, terceto);
+                    break;
             }
         }
+    }
+
+    private void writeWhile(FileWriter fileWriter, Terceto terceto) throws IOException {
+        String whileLabel = "while" + whileLabelsCont;
+        whileLabels.push(whileLabel);
+        whileLabelsCont++;
+
+        fileWriter.write(whileLabel + ":\n");
     }
 
     private void writePrint(FileWriter fileWriter, Terceto terceto) throws IOException {
@@ -261,13 +275,21 @@ public class AsmCodeGenerator implements FileGenerator {
 
     private void writeInconditionalJump(FileWriter fileWriter, Terceto terceto) throws IOException {
 
-        String conditionLabel = "endif_" + conditionLabelsCont;
+        int pos = Integer.valueOf(terceto.getSecond().replace("[", "").replace("]", "")) - 1;
 
-        fileWriter.write("JMP " + conditionLabel + "\n\n");
-        fileWriter.write(conditionLabels.pop() + ":\n");
+        if(TercetoManager.tercetoList.get(pos).getFirst() == "ET_WHILE"){
+            String whileLabel = whileLabels.pop();
 
-        conditionLabelsCont++;
-        conditionLabels.push(conditionLabel);
+            fileWriter.write("JMP " + whileLabel + "\n\n");
+        }else{
+            String conditionLabel = "endif_" + conditionLabelsCont;
+
+            fileWriter.write("JMP " + conditionLabel + "\n\n");
+            fileWriter.write(conditionLabels.pop() + ":\n");
+
+            conditionLabelsCont++;
+            conditionLabels.push(conditionLabel);
+        }
     }
 
     private void writeLabel(FileWriter fileWriter) throws IOException {

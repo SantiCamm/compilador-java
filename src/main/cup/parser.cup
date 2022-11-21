@@ -337,7 +337,7 @@ iterator ::= WHILE OPEN_BRACKET {: Terceto tercetoEt = new Terceto("ET_WHILE"); 
             complexCond = -1;
 
             Terceto tercetoBi = new Terceto("BI", TercetoManager.iteratorIdx.getTercetoNumber());
-            Terceto endif = new Terceto("endif");
+            Terceto endif = new Terceto("endwhile");
 
             :};
 
