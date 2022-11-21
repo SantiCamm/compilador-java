@@ -103,6 +103,8 @@ REPEAT 5 [while (a > b) {
               }
           }]
 
+REPEAT 1 [write("pedro")]
+
 /* Sintaxis invalida */
 // REPEAT a [read("hola")]
 
